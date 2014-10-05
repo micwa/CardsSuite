@@ -1,30 +1,51 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "wargame.h"
+#include "warui.h"
+#include "carddefs.h"
+#include "cardutility.h"
+
+const char * STATS_FILE = "player.stats";
+const char * SAVE_FILE = "player.save";
 
 static enum GameState curr_state = START;
+static struct Hand *player_hand, *cpu_hand;
 
-void show_war_menu()
+void quit_wargame()
 {
-	switch (curr_state) {
-		case START: show_menu_start();	break;
-		case PAUSE: show_menu_paused(); break;
-		case WIN: show_menu_win();		break;
-		case LOSE: show_menu_lose();	break;
+	printf("Thank you for playing!");
+	free(player_hand->cards);
+	free(cpu_hand->cards);
+}
+
+void save_wargame()
+{
+
+}
+
+void start_new_wargame()
+{
+	printf("New game started\n");
+	struct Hand *h = split_hand(gen_random_deck(), 2);
+	player_hand = &h[0];
+	cpu_hand = &h[1];
+
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < h[i].ncards; j++) {
+			printf("%s ", get_card_encoding(h[i].cards[j]));
+		}
+		printf("\n");
 	}
 }
 
-static void show_menu_start()
+void start_saved_wargame()
 {
-	printf("Welcome to WAR!\n\n");
-	printf("\t1. Start new game\n");
-	printf("\t2. Resume saved game\n");
-	printf("\t3. Show statistics\n");
-	printf("\t4. Quit\n\n");
-	printf("\tChoose an option: ");
+	printf("Saved game started\n");
 }
 
-static void start_war_game()
+void war()
 {
-	show_war_menu();
+	printf("WAR\n");
+	show_war_menu(curr_state);
 }

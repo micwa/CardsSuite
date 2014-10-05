@@ -3,22 +3,19 @@
 
 enum GameState { START, PAUSE, WIN, LOSE };
 
-/* Displays the menu (different depending on current gamestate */
-void show_war_menu();
-
-/* Different menus */
-static void show_menu_start();
-static void show_menu_paused();
-static void show_menu_won();
-static void show_menu_lost();
+/* Quits the game and frees all malloc'd memory */
+void quit_wargame();
 
 /* Saves the current game state to a text file */
-static void save_game();
+void save_wargame();
 
 /* Starts a new game */
-static void start_new_game();
+void start_new_wargame();
 
 /* Starts a saved game */
-static void start_saved_game();
+void start_saved_wargame();
+
+/* Launches war, i.e. this game */
+void war();
 
 #endif /* WARGAME_H_ */

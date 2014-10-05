@@ -9,8 +9,8 @@ int main(int argc, char *argv[])
     if (argc == 1) {
         printf("No card game specified.\n");
     } else if (argc == 2) {
-        if (strcmp(argv[1], "war"))
-        	start_war_menu();
+        if (strcmp(argv[1], "war") == 0)
+        	war();
         else
         	printf("Not a valid game");
     } else {
