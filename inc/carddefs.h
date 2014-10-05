@@ -1,7 +1,11 @@
 #ifndef CARDDEFS_H_
 #define CARDDEFS_H_
 
-enum Suit { CLUB, DIAMOND, SPADE, HEART };
+/* Prefix and suffixes for the suits, in the order they are enumerated */
+extern const char *CARD_UTF_PREFIX;
+extern const char *CARD_SUFFIXES[4];
+
+enum Suit { CLUB, DIAMOND, HEART, SPADE };
 
 /* A card with a number and a suit. */
 struct Card {
