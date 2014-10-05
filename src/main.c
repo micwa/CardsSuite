@@ -1,29 +1,21 @@
 #include <stdio.h>
-#include "carddefs.h"
-#include "cardutility.h"
+#include <string.h>
 
-void testHand();
+#include "wargame.h"
 
 int main(int argc, char *argv[])
 {
-    /* Starting game */
+    /* Start game, and hand all control to that game */
     if (argc == 1) {
         printf("No card game specified.\n");
     } else if (argc == 2) {
-        printf("Now playing %s...\n", argv[1]);
+        if (strcmp(argv[1], "war"))
+        	start_war_menu();
+        else
+        	printf("Not a valid game");
     } else {
         printf("Too many arguments!");
     }
 
-    /* Testing */
-    testHand();
     return 0; 
-}
-
-void testHand()
-{
-    struct Card *cards = gen_random_deck().cards;
-    for (int i = 0; i < 52; i++, cards++) {
-        printf("%s\n", get_card_name(*cards));
-    }
 }

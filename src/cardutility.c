@@ -12,13 +12,27 @@ const char *CARD_SUFFIXES[4] = { "\x83\x91", "\x83\x81", "\x82\xb1" , "\x82\xa1"
 
 /* Private constants */
 static const int SHUFFLE_AMOUNT = 1000;
+static int isrand_init = 0;
+
+int card_compare(struct Card c1, struct Card c2)
+{
+	if (c1.number < c2.number)
+		return -1;
+	else if (c1.number > c2.number)
+		return 1;
+	else
+		return (c1.suit == c2.suit) ? 0 : c1.suit - c2.suit;
+}
 
 struct Card gen_random_card()
 {
     int num, suit;
     struct Card card;
 
-    srand(time(NULL));
+    if (!isrand_init) {
+    	srand(time(NULL));
+    	isrand_init = 1;
+    }
     num = rand() % 13 + 1;					/* Must be in between 1 and 13 */
     suit = rand() % 4;
     card.number = num;
@@ -38,7 +52,11 @@ struct Hand gen_random_deck()
         cards[i].number = i % 13 + 1;
         cards[i].suit = i / 13;
     }
-    srand(time(NULL));
+
+    if (!isrand_init) {
+       	srand(time(NULL));
+       	isrand_init = 1;
+    }
     for (int i = 0; i < SHUFFLE_AMOUNT; i++) {
         swap1 = rand() % 52;
         do {
@@ -64,15 +82,6 @@ char * get_card_encoding(struct Card card)
 	enc[3] += card.number - 1;				/* Some character addition */
 
 	return enc;
-}
-
-int get_card_value(struct Card card)
-{
-    int value = 0;
-    value += card.number;
-    value += card.suit * 13;				/* Clubs are 0-12, Diamonds are 13-25, etc. */
-
-    return value;
 }
 
 /* Note: if there is an error, this function returns a null string. */
@@ -103,4 +112,13 @@ char * get_card_name(struct Card card)
         default: return '\0';
     }
     return name;
+}
+
+int get_card_value(struct Card card)
+{
+    int value = 0;
+    value += card.number;
+    value += card.suit * 13;				/* Clubs are 0-12, Diamonds are 13-25, etc. */
+
+    return value;
 }
