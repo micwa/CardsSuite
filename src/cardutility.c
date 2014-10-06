@@ -23,14 +23,14 @@ int all_cards_played(const struct Hand *hand)
     return 1;
 }
 
-int card_compare(const struct Card c1, const struct Card c2)
+int card_compare(const struct Card *c1, const struct Card *c2)
 {
-	if (c1.number < c2.number)
+	if (c1->number < c2->number)
 		return -1;
-	else if (c1.number > c2.number)
+	else if (c1->number > c2->number)
 		return 1;
 	else
-		return (c1.suit == c2.suit) ? 0 : c1.suit - c2.suit;
+		return (c1->suit == c2->suit) ? 0 : c1->suit - c2->suit;
 }
 
 struct Card gen_random_card()
@@ -87,21 +87,21 @@ struct Hand gen_random_deck()
     return hand;
 }
 
-char * get_card_encoding(const struct Card card)
+char * get_card_encoding(const struct Card *card)
 {
 	char *enc = malloc(4 * sizeof(char));
 	strcpy(enc, CARD_UTF_PREFIX);
-	strcat(enc, CARD_SUFFIXES[card.suit]);
-	enc[3] += card.number - 1;				/* Some character addition */
+	strcat(enc, CARD_SUFFIXES[card->suit]);
+	enc[3] += card->number - 1;				/* Some character addition */
 
 	return enc;
 }
 
 /* Note: if there is an error, this function returns a null string. */
-char * get_card_name(const struct Card card)
+char * get_card_name(const struct Card *card)
 {
     char *name = malloc(20 * sizeof(char));
-    switch (card.number) {
+    switch (card->number) {
         case 1: strcpy(name, "1");    	break;
         case 2: strcpy(name, "2");    	break;
         case 3: strcpy(name, "3");  	break;
@@ -117,7 +117,7 @@ char * get_card_name(const struct Card card)
         case 13: strcpy(name, "King");  break;
         default: return '\0';
     }
-    switch (card.suit) {
+    switch (card->suit) {
         case CLUB:      strcat(name, " of Clubs");     break;
         case DIAMOND:   strcat(name, " of Diamonds");  break;
         case HEART:     strcat(name, " of Hearts");    break;
@@ -127,16 +127,16 @@ char * get_card_name(const struct Card card)
     return name;
 }
 
-int get_card_value(const struct Card card)
+int get_card_value(const struct Card *card)
 {
     int value = 0;
-    value += card.number;
-    value += card.suit * 13;				/* Clubs are 0-12, Diamonds are 13-25, etc. */
+    value += card->number;
+    value += card->suit * 13;				/* Clubs are 0-12, Diamonds are 13-25, etc. */
 
     return value;
 }
 
-struct Hand * split_hand(struct Hand hand, int nhands)
+struct Hand * split_hand(struct Hand *hand, int nhands)
 {
 	struct Hand *hands = malloc(nhands * sizeof(struct Hand));		/* Remember to free this! */
 	int counter = 0;
@@ -145,8 +145,8 @@ struct Hand * split_hand(struct Hand hand, int nhands)
 		/* Assign to hand[i] an array of size 52 / nhands. Note that this
 		 * uses the cards/isplayed in the Hand parameter - no new memory is allocated
          * EXCEPT for the Hands themselves. */
-		hands[i].cards = &hand.cards[52 / nhands * i];
-        hands[i].isplayed = &hand.isplayed[52 / nhands * i];
+		hands[i].cards = &hand->cards[52 / nhands * i];
+        hands[i].isplayed = &hand->isplayed[52 / nhands * i];
 		hands[i].ncards = 52 / nhands;
 		counter += hands[i].ncards;
 	}

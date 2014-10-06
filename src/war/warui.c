@@ -6,7 +6,7 @@
 #include "warui.h"
 #include "wargame.h"
 
-void draw_war_board(const struct Player *player, const struct Player *cpu)
+void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card *cprev[])
 {
     #ifdef _WIN32                           /* First clear the board */
     system("cls");
@@ -34,9 +34,9 @@ void draw_war_board(const struct Player *player, const struct Player *cpu)
     	}
     }
     skipfirst = 0;
-    enc = get_card_encoding(temp->cards[index]);
+    enc = get_card_encoding(&temp->cards[index]);
     printf("\n\n\n");
-    printf("%40s", enc);
+    printf("%30s", enc);
     free(enc);
 
     printf("\n\n");
@@ -45,8 +45,8 @@ void draw_war_board(const struct Player *player, const struct Player *cpu)
     	if (!temp->isplayed[i]) {
     		if (!skipfirst) {						/* If it's the first card, draw it */
     			skipfirst = 1;
-    			enc = get_card_encoding(temp->cards[index]);
-    			printf("%40s", enc);
+    			enc = get_card_encoding(&temp->cards[index]);
+    			printf("%30s", enc);
     			printf("\n\n\n");
     			free(enc);
     		}
@@ -103,7 +103,6 @@ static void show_menu_lose()
 
 void show_war_menu(enum GameState state)
 {
-	split_hand(gen_random_deck(), 2);
 	switch (state) {
 		case START: show_menu_start();	break;
 		case PAUSE: show_menu_pause(); 	break;

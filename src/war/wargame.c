@@ -17,19 +17,54 @@ static struct Player *player = NULL, *cpu = NULL;
 /* Start playing the game, assuming that hands are initialized */
 static void play_game()
 {
+	/* For comparing current cards, and storing previous ones for drawing.
+	 * cpu is index 0, player is index 1 */
+	struct Hand *temp;
+	struct Card *ccur[2] = { NULL, NULL }, *cprev[2] = { NULL, NULL };
     char c;
-    draw_war_board(player, cpu);
+
+    draw_war_board(player, cpu, cprev);
     
     while (curr_state == START) {
+
         /* Prompt user to press enter, and skip over all input */
         printf("Press 'n' to turn over the next card (or p to pause):");
         while ((c = getchar()) != '\n') {
             if (c == 'p')
                 curr_state = PAUSE;
         }
-        
-        /* Check if all cards are gone; if so, refill hand or show win/lose.
-         * Then "flip" the card by setting the next isplayed[i] to 1 */
+
+        /* Find next unplayed card, and "flip" the card by setting the
+         * next isplayed[i] to 1. */
+        temp = cpu->hand;
+        for (int i = 0; i < temp->ncards; i++) {
+        	if (!temp->isplayed) {
+        		cprev[0] = ccur[0];
+        		ccur[0] = &temp->cards[i];
+        		temp->isplayed[i] = 1;
+        		break;
+        	}
+        }
+        temp = player->hand;
+        for (int i = 0; i < temp->ncards; i++) {
+        	if (!temp->isplayed) {
+        		cprev[1] = ccur[1];
+        		ccur[1] = &temp->cards[i];
+        		temp->isplayed[i] = 1;
+        		break;
+        	}
+        }
+
+        /* Compare hands (so warui.c can draw them properly) */
+        if (card_compare(ccur[0], ccur[1]) > 0) {
+        	cpu->curr_score = 1;
+        	player->curr_score = 0;
+        } else {
+        	cpu->curr_score = 0;
+        	player->curr_score = 1;
+        }
+
+        /* Check if all cards are gone; if so, refill hand or show win/lose. */
         if (all_cards_played(player->hand)) {
         	printf("Refilling hand...\n");
         }
@@ -73,7 +108,8 @@ void start_new_wargame()
     players_destroy();						/* If quit previous game */
     
     /* Set up players, then play */
-    struct Hand *h = split_hand(gen_random_deck(), 2);
+    struct Hand deck = gen_random_deck();
+    struct Hand *h = split_hand(&deck, 2);
     player = malloc(sizeof(struct Player));
     cpu = malloc(sizeof(struct Player));
 
