@@ -9,10 +9,19 @@
 /* Define constants from carddefs.h */
 const char *CARD_UTF_PREFIX = "\xf0\x9f";
 const char *CARD_SUFFIXES[4] = { "\x83\x91", "\x83\x81", "\x82\xb1" , "\x82\xa1" };
+const char *CARD_BACK = "\xf0\x9f\x82\xa0";
 
-/* Private constants */
+/* Private constants/variables */
 static const int SHUFFLE_AMOUNT = 1000;
 static int isrand_init = 0;
+
+int all_cards_played(const struct Hand * hand)
+{
+    for (int i = 0; i < hand->ncards; i++)
+        if (hand->isplayed[i] == 0)
+            return 0;
+    return 1;
+}
 
 int card_compare(const struct Card c1, const struct Card c2)
 {
@@ -47,6 +56,7 @@ struct Hand gen_random_deck()
     struct Card *cards = malloc(52 * sizeof(struct Card));
     struct Card temp_card;
     int swap1, swap2;
+    int *isplayed;
 
     for (int i = 0; i < 52; i++) {			/* Populate the deck */
         cards[i].number = i % 13 + 1;
@@ -69,7 +79,10 @@ struct Hand gen_random_deck()
     }
     
     hand.ncards = 52;
-    hand.cards = cards;						/* Remember to free() this later! */
+    hand.cards = cards;						/* Remember to free() this... */
+    isplayed = malloc(hand.ncards * sizeof(int));
+    memset(isplayed, 0, hand.ncards * sizeof(int));
+    hand.isplayed = &isplayed[0];                /* ...and this! */
 
     return hand;
 }
@@ -130,8 +143,10 @@ struct Hand * split_hand(struct Hand hand, int nhands)
 
 	for (int i = 0; i < nhands; i++) {
 		/* Assign to hand[i] an array of size 52 / nhands. Note that this
-		 * uses the cards in the Hand parameter - no new cards are created. */
+		 * uses the cards/isplayed in the Hand parameter - no new memory is allocated
+         * EXCEPT for the Hands themselves. */
 		hands[i].cards = &hand.cards[52 / nhands * i];
+        hands[i].isplayed = &hand.isplayed[52 / nhands * i];
 		hands[i].ncards = 52 / nhands;
 		counter += hands[i].ncards;
 	}
