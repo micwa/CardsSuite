@@ -1,12 +1,6 @@
 #ifndef WARGAME_H_
 #define WARGAME_H_
 
-/* Frees all malloc'd memory */
-static void players_destroy();
-
-/* Start playing the game, assuming that hands are initialized */
-static void play_game();
-
 /* Quits the game; also should call hands_destroy() */
 void quit_wargame();
 

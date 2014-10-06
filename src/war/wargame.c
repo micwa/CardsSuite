@@ -14,6 +14,29 @@ const char *SAVE_FILE = "player.save";
 static enum GameState curr_state = START;
 static struct Player *player = NULL, *cpu = NULL;
 
+/* Start playing the game, assuming that hands are initialized */
+static void play_game()
+{
+    char c;
+    draw_war_board(player, cpu);
+    
+    while (curr_state == START) {
+        /* Prompt user to press enter, and skip over all input */
+        printf("Press 'n' to turn over the next card (or p to pause):");
+        while ((c = getchar()) != '\n') {
+            if (c == 'p')
+                curr_state = PAUSE;
+        }
+        
+        /* Check if all cards are gone; if so, refill hand or show win/lose.
+         * Then "flip" the card by setting the next isplayed[i] to 1 */
+        if (all_cards_played(player->hand)) {
+        	printf("Refilling hand...\n");
+        }
+    }
+}
+
+/* Frees all malloc'd memory (players, hands, etc.*/
 static void players_destroy()
 {
 	struct Hand *temp;
@@ -33,30 +56,9 @@ static void players_destroy()
     }
 }
 
-static void play_game()
-{
-    char c;
-    draw_war_board(player, cpu);
-    
-    while (curr_state == START) {
-        /* Prompt user to press enter, and skip over all input */
-        printf("Press enter to turn over the next card (or p to pause): ");
-        while ((c = getchar()) != '\n') {
-            if (c == 'p')
-                curr_state = PAUSE;
-        }
-        
-        /* Check if all cards are gone; if so, refill hand or show win/lose.
-         * Then "flip" the card by setting the next isplayed[i] to 1 */
-        if (all_cards_played(player->hand)) {
-        	printf("Refilling hand...\n");
-        }
-    }
-}
-
 void quit_wargame()
 {
-	printf("Thank player for playing! Bye!\n");
+	printf("Thank you for playing. Bye!\n");
     players_destroy();
 }
 
@@ -68,11 +70,13 @@ void save_wargame()
 void start_new_wargame()
 {
 	printf("Starting new game...\n");
-    players_destroy();
+    players_destroy();						/* If quit previous game */
     
     /* Set up players, then play */
+    struct Hand *h = split_hand(gen_random_deck(), 2);
     player = malloc(sizeof(struct Player));
-	struct Hand *h = split_hand(gen_random_deck(), 2);
+    cpu = malloc(sizeof(struct Player));
+
 	player->hand = &h[0];
 	player->nwins = 0; player->nlosses = 0;
 	player->curr_score = 0;
@@ -97,6 +101,5 @@ void start_saved_wargame()
 
 void war()
 {
-	printf("WAR\n");
 	show_war_menu(curr_state);
 }
