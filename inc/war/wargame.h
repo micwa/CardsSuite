@@ -1,9 +1,13 @@
 #ifndef WARGAME_H_
 #define WARGAME_H_
 
-enum GameState { START, PAUSE, WIN, LOSE };
+/* Frees all malloc'd memory */
+static void players_destroy();
 
-/* Quits the game and frees all malloc'd memory */
+/* Start playing the game, assuming that hands are initialized */
+static void play_game();
+
+/* Quits the game; also should call hands_destroy() */
 void quit_wargame();
 
 /* Saves the current game state to a text file */

@@ -1,8 +1,19 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "cardutility.h"
+#include "gamedefs.h"
 #include "warui.h"
 #include "wargame.h"
+
+void draw_war_board(struct Player *player, struct Player *cpu)
+{
+    #ifdef _WIN32                           /* First clear the board */
+    system("cls");
+    #else   /* Assume POSIX */
+    system ("clear");
+    #endif
+}
 
 static void print_stats()
 {

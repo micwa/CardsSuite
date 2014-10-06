@@ -1,6 +1,11 @@
 #ifndef WARUI_H_
 #define WARUI_H_
 
+#include "carddefs.h"
+
+/* Draws the two hands on the console screen */
+void draw_war_board(struct Player *player, struct Player *cpu);
+
 /* Prints game statistics */
 static void print_stats();
 
