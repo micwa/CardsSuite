@@ -3,8 +3,8 @@
 
 #include "carddefs.h"
 
-/* Returns 1 if all cards in the Hand have been played, and 0 if not */
-int all_cards_played(const struct Hand *hand);
+/* Returns the number of cards that have been played in the given hand  */
+int cards_played(const struct Hand *hand);
 
 /* Returns 0 if the cards are the same; <0 if c1 is lower than c2; and >0 otherwise.
  * The ranking of suits is defined in carddefs.h */

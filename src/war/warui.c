@@ -1,60 +1,75 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cardutility.h"
 #include "gamedefs.h"
 #include "warui.h"
 #include "wargame.h"
 
-void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card *cprev[])
+#ifdef _WIN32
+#define BOARD_CLEAR system("cls");
+#define SYS_PAUSE system("sleep 0.3");
+#else   /* Assume POSIX */
+#define BOARD_CLEAR system("clear");		/* For some reason, also prints weird characters on screen */
+#define SYS_PAUSE system("ping 127.0.0.1 -n 2");
+#endif
+
+void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card *cards[])
 {
-    #ifdef _WIN32                           /* First clear the board */
-    system("cls");
-    #else   /* Assume POSIX */
-    system ("clear");
-    #endif
+	BOARD_CLEAR;                           	/* First clear the board */
 
     /* Draw cpu on top; cards in center; won cards on right; player
      * cards on bottom. Note that this assumes there is at least 1 unplayed
      * card in each player's hand. */
-    struct Hand *temp;
-    char *enc;
-    int skipfirst = 0;						/* Skip drawing the first unplayed card */
-    int index;								/* Index of that card */
+    char *cpu_enc, *pl_enc, *enc, *enc2;
+    int cpu_index, pl_index;				/* Index of first unplayed/number of cards unplayed */
+    int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
 
-    printf("\n");
-    temp = cpu->hand;
-    for (int i = 0; i < temp->ncards; i++) {		/* Drawing cpu hand */
-    	if (!temp->isplayed[i]) {
-    		if (!skipfirst) {
-    		    skipfirst = 1;
-    		    index = i;
-    		} else
-    			printf("%s   ", CARD_BACK);
-    	}
+    cpu_index = cards_played(cpu->hand);
+    pl_index = cards_played(player->hand);
+
+    if (cpu_index == cpu->hand->ncards || pl_index == cpu->hand->ncards)			/* Exit if for some reason all cards played for one hand */
+        	exit(EXIT_FAILURE);
+
+    cpu_enc = get_card_encoding(&cpu->hand->cards[cpu_index]);
+    pl_enc = get_card_encoding(&player->hand->cards[pl_index]);
+    cpu_todraw = cpu->hand->ncards - cpu_index - 1;
+    pl_todraw = player->hand->ncards - pl_index - 1;
+
+    /* Finished initializing variables - now for the drawing part */
+
+    printf("\n");							/* Board top */
+    for (int i = 0; i < cpu_todraw; i++)
+    	printf("%s   ", CARD_BACK);
+
+    printf("\n\n");							/* Board center */
+    printf("%35s", cpu_enc);
+    if (cards[0] != NULL && cpu->curr_score == 1) {
+       	enc = get_card_encoding(cards[0]);
+       	enc2 = get_card_encoding(cards[1]);
+       	printf("%35s", enc); printf("   %s", enc2);
+       	free(enc);
+       	free(enc2);
     }
-    skipfirst = 0;
-    enc = get_card_encoding(&temp->cards[index]);
-    printf("\n\n\n");
-    printf("%30s", enc);
-    free(enc);
-
     printf("\n\n");
-    temp = player->hand;
-    for (int i = 0; i < temp->ncards; i++) {		/* Drawing player hand */
-    	if (!temp->isplayed[i]) {
-    		if (!skipfirst) {						/* If it's the first card, draw it */
-    			skipfirst = 1;
-    			enc = get_card_encoding(&temp->cards[index]);
-    			printf("%30s", enc);
-    			printf("\n\n\n");
-    			free(enc);
-    		}
-    		else
-    			printf("%s   ", CARD_BACK);
-    	}
+    printf("%35s", pl_enc);
+    if (cards[0] != NULL && player->curr_score == 1) {
+    	enc = get_card_encoding(cards[0]);
+    	enc2 = get_card_encoding(cards[1]);
+    	printf("%35s", enc2); printf("   %s", enc);		/* Flip order */
+    	free(enc);
+    	free(enc2);
     }
+    printf("\n\n");
+
+    printf("\n");							/* Board bottom */
+    for (int i = 0; i < pl_todraw; i++)
+        printf("%s   ", CARD_BACK);
     printf("\n");
+
+    free(cpu_enc);
+    free(pl_enc);
 }
 
 /* Prints game statistics */
@@ -77,6 +92,7 @@ static void show_menu_start()
 	do {
 		printf("Choose an option: ");
 		scanf("%d", &option);
+		getchar();							/* Discard newline!!! */
 	} while (option < 1 || option > 4);
 
 	switch (option){

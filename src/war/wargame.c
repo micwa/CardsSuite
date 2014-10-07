@@ -19,16 +19,15 @@ static void play_game()
 {
 	/* For comparing current cards, and storing previous ones for drawing.
 	 * cpu is index 0, player is index 1 */
-	struct Hand *temp;
-	struct Card *ccur[2] = { NULL, NULL }, *cprev[2] = { NULL, NULL };
+	struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
     char c;
-
-    draw_war_board(player, cpu, cprev);
+    int cpu_played, pl_played; 				/* Number of cards unplayed */
     
     while (curr_state == START) {
+    	draw_war_board(player, cpu, ccur);	/* Since settings of ccur[] is after this */
 
         /* Prompt user to press enter, and skip over all input */
-        printf("Press 'n' to turn over the next card (or p to pause):");
+        printf("Press enter to turn over the next card (or p to pause):");
         while ((c = getchar()) != '\n') {
             if (c == 'p')
                 curr_state = PAUSE;
@@ -36,24 +35,13 @@ static void play_game()
 
         /* Find next unplayed card, and "flip" the card by setting the
          * next isplayed[i] to 1. */
-        temp = cpu->hand;
-        for (int i = 0; i < temp->ncards; i++) {
-        	if (!temp->isplayed) {
-        		cprev[0] = ccur[0];
-        		ccur[0] = &temp->cards[i];
-        		temp->isplayed[i] = 1;
-        		break;
-        	}
-        }
-        temp = player->hand;
-        for (int i = 0; i < temp->ncards; i++) {
-        	if (!temp->isplayed) {
-        		cprev[1] = ccur[1];
-        		ccur[1] = &temp->cards[i];
-        		temp->isplayed[i] = 1;
-        		break;
-        	}
-        }
+        cpu_played = cards_played(cpu->hand);
+        pl_played = cards_played(player->hand);
+
+        ccur[0] = &cpu->hand->cards[cpu_played];			/* Works because that's how war works :) */
+        cpu->hand->isplayed[cpu_played] = 1;
+        ccur[1] = &player->hand->cards[pl_played];
+        player->hand->isplayed[pl_played] = 1;
 
         /* Compare hands (so warui.c can draw them properly) */
         if (card_compare(ccur[0], ccur[1]) > 0) {
@@ -65,7 +53,7 @@ static void play_game()
         }
 
         /* Check if all cards are gone; if so, refill hand or show win/lose. */
-        if (all_cards_played(player->hand)) {
+        if (cards_played(player->hand) == player->hand->ncards) {
         	printf("Refilling hand...\n");
         }
     }

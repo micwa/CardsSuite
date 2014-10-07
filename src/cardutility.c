@@ -15,12 +15,13 @@ const char *CARD_BACK = "\xf0\x9f\x82\xa0";
 static const int SHUFFLE_AMOUNT = 1000;
 static int isrand_init = 0;
 
-int all_cards_played(const struct Hand *hand)
+int cards_played(const struct Hand *hand)
 {
+	int counter = 0;
     for (int i = 0; i < hand->ncards; i++)
-        if (hand->isplayed[i] == 0)
-            return 0;
-    return 1;
+        if (hand->isplayed[i] == 1)
+            counter++;
+    return counter;
 }
 
 int card_compare(const struct Card *c1, const struct Card *c2)
