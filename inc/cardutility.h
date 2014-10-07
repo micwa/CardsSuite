@@ -14,7 +14,7 @@ int card_compare(const struct Card *c1, const struct Card *c2);
 struct Card gen_random_card();
 
 /* Returns a Hand with 52 cards, all shuffled */
-struct Hand gen_random_deck();
+struct Hand gen_random_deck(int shuffle_amount);
 
 /* Returns the encoding in UTF-8 of the playing card */
 char * get_card_encoding(const struct Card *card);
@@ -28,5 +28,9 @@ char * get_card_name(const struct Card *card);
 
 /* Splits the hand (or deck) into the specified number of Hands */
 struct Hand * split_hand(struct Hand *hand, int nhands);
+
+/* Combines the two hands into one hand; does not copy NULL cards or invalid cards (i.e. number < 1 or number > 13)
+ * This method allocates new memory for the Hand/cards, so free the old hands when appropriate. */
+struct Hand * squash_hands(const struct Hand *hand1, const struct Card *hand2[52]);
 
 #endif /* CARDUTIL_H_ */

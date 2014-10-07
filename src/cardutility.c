@@ -12,16 +12,15 @@ const char *CARD_SUFFIXES[4] = { "\x83\x91", "\x83\x81", "\x82\xb1" , "\x82\xa1"
 const char *CARD_BACK = "\xf0\x9f\x82\xa0";
 
 /* Private constants/variables */
-static const int SHUFFLE_AMOUNT = 1000;
 static int isrand_init = 0;
 
 int cards_played(const struct Hand *hand)
 {
-	int counter = 0;
+	int count = 0;
     for (int i = 0; i < hand->ncards; i++)
         if (hand->isplayed[i] == 1)
-            counter++;
-    return counter;
+            count++;
+    return count;
 }
 
 int card_compare(const struct Card *c1, const struct Card *c2)
@@ -51,7 +50,7 @@ struct Card gen_random_card()
     return card;
 }
 
-struct Hand gen_random_deck()
+struct Hand gen_random_deck(int shuffle_amount)
 {
     struct Hand hand;
     struct Card *cards = malloc(52 * sizeof(struct Card));
@@ -68,7 +67,7 @@ struct Hand gen_random_deck()
        	srand(time(NULL));
        	isrand_init = 1;
     }
-    for (int i = 0; i < SHUFFLE_AMOUNT; i++) {
+    for (int i = 0; i < shuffle_amount; i++) {
         swap1 = rand() % 52;
         do {
             swap2 = rand() % 52;
@@ -154,4 +153,36 @@ struct Hand * split_hand(struct Hand *hand, int nhands)
 	hands[nhands - 1].ncards += 52 - counter;	/* Adjust for possible remainder */
 
 	return hands;
+}
+
+struct Hand * squash_hands(const struct Hand *hand1, const struct Card *hand2[52])
+{
+	struct Hand *hand;
+	struct Card *cards;
+	int *isplayed, count = 0;
+
+	for (int i = 0; i < hand1->ncards; i++)
+		if (hand1->cards[i].number > 0)
+			count++;
+	for (int i = 0; i < 52; i++)
+		if (hand2[i] != NULL && hand2[i]->number > 0)			/* Different because hand2[i] is already a card pointer */
+			count++;
+
+	/* Allocate memory, then fill up cards */
+	hand = malloc(sizeof(struct Hand));
+	cards = malloc(count * sizeof(struct Card));
+	isplayed = malloc(count * sizeof(int));
+
+	count = 0;
+	for (int i = 0; i < hand1->ncards; i++)
+		if (hand1->cards[i].number > 0)
+			cards[count++] = hand1->cards[i];		/* Note that this COPIES the cards, so that hand1/hand2 can be free()d */
+	for (int i = 0; i < 52; i++)
+		if (hand2[i] != NULL && hand2[i]->number > 0)
+			cards[count++] = *hand2[i];
+
+	hand->ncards = count;
+	hand->cards = cards;
+	hand->isplayed = isplayed;
+	return hand;
 }

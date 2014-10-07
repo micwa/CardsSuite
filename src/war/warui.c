@@ -9,22 +9,18 @@
 
 #ifdef _WIN32
 #define BOARD_CLEAR system("cls");
-#define SYS_PAUSE system("sleep 0.3");
+#define SYS_PAUSE system("ping 127.0.0.1 -n 2";
 #else   /* Assume POSIX */
 #define BOARD_CLEAR system("clear");		/* For some reason, also prints weird characters on screen */
-#define SYS_PAUSE system("ping 127.0.0.1 -n 2");
+#define SYS_PAUSE system("sleep 0.5");
 #endif
 
-void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card *cards[])
+void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card cards[])
 {
-	BOARD_CLEAR;                           	/* First clear the board */
-
-    /* Draw cpu on top; cards in center; won cards on right; player
-     * cards on bottom. Note that this assumes there is at least 1 unplayed
-     * card in each player's hand. */
     char *cpu_enc, *pl_enc, *enc, *enc2;
     int cpu_index, pl_index;				/* Index of first unplayed/number of cards unplayed */
     int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
+    const int NUM_FRAMES = 3;
 
     cpu_index = cards_played(cpu->hand);
     pl_index = cards_played(player->hand);
@@ -36,37 +32,62 @@ void draw_war_board(const struct Player *player, const struct Player *cpu, const
     pl_enc = get_card_encoding(&player->hand->cards[pl_index]);
     cpu_todraw = cpu->hand->ncards - cpu_index - 1;
     pl_todraw = player->hand->ncards - pl_index - 1;
+    /* Finished initializing variables*/
 
-    /* Finished initializing variables - now for the drawing part */
+    /* Draw cpu on top; cards in center; won cards on right; player
+         * cards on bottom. Note that this assumes there is at least 1 unplayed
+         * card in each player's hand. */
+    for (int i = 0; i < NUM_FRAMES; i++) {
+    	BOARD_CLEAR;                        /* First clear the board */
+    	printf("\n");						/* Board top */
+    	for (int i = 0; i < cpu_todraw; i++)
+    		printf("%s   ", CARD_BACK);
+    	printf("\n");
 
-    printf("\n");							/* Board top */
-    for (int i = 0; i < cpu_todraw; i++)
-    	printf("%s   ", CARD_BACK);
+    	if (i != 0) {						/* Board center */
+    		printf("\n");
+    		if (i == 2)
+    			printf("%35s", cpu_enc);
+    		else
+    			printf("%35s", CARD_BACK);
+    	}
+    	else {
+    		printf("%35s", CARD_BACK);		/* Put card back closer to hand */
+    		printf("\n\n");
+    	}
+    	if (i != 0 && cards[0].number > 0 && cpu->curr_score == 1) {
+    		enc = get_card_encoding(&cards[0]);
+    		enc2 = get_card_encoding(&cards[1]);
+    		printf("%20s", enc); printf("%5s", enc2);
+    		free(enc);
+    		free(enc2);
+    	}
+    	printf("\n");
+    	if (i != 0) {
+    		if (i == 2)
+    			printf("%35s", pl_enc);
+    		else
+    			printf("%35s", CARD_BACK);
+    	}
+    	if (i != 0 && cards[0].number > 0&& player->curr_score == 1) {
+    		enc = get_card_encoding(&cards[0]);
+    		enc2 = get_card_encoding(&cards[1]);
+    		printf("%35s ", enc2); printf("%s", enc);		/* Flip order */
+    		free(enc);
+    		free(enc2);
+    	}
+    	if (i != 0)
+    		printf("\n");
+    	else
+    		printf("%35s", CARD_BACK);
 
-    printf("\n\n");							/* Board center */
-    printf("%35s", cpu_enc);
-    if (cards[0] != NULL && cpu->curr_score == 1) {
-       	enc = get_card_encoding(cards[0]);
-       	enc2 = get_card_encoding(cards[1]);
-       	printf("%35s", enc); printf("   %s", enc2);
-       	free(enc);
-       	free(enc2);
+    	printf("\n");						/* Board bottom */
+    	for (int i = 0; i < pl_todraw; i++)
+    		printf("%s   ", CARD_BACK);
+    	printf("\n");
+    	if (i != NUM_FRAMES)				/* Only pause if not last "frame" */
+    		SYS_PAUSE;
     }
-    printf("\n\n");
-    printf("%35s", pl_enc);
-    if (cards[0] != NULL && player->curr_score == 1) {
-    	enc = get_card_encoding(cards[0]);
-    	enc2 = get_card_encoding(cards[1]);
-    	printf("%35s", enc2); printf("   %s", enc);		/* Flip order */
-    	free(enc);
-    	free(enc2);
-    }
-    printf("\n\n");
-
-    printf("\n");							/* Board bottom */
-    for (int i = 0; i < pl_todraw; i++)
-        printf("%s   ", CARD_BACK);
-    printf("\n");
 
     free(cpu_enc);
     free(pl_enc);
