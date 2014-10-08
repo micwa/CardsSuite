@@ -12,7 +12,7 @@
 #define SYS_PAUSE system("ping 127.0.0.1 -n 2";
 #else   /* Assume POSIX */
 #define BOARD_CLEAR system("clear");		/* For some reason, also prints weird characters on screen */
-#define SYS_PAUSE system("sleep 0.5");
+#define SYS_PAUSE system("sleep 0.1");
 #endif
 
 void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card cards[])

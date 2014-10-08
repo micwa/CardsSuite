@@ -33,6 +33,21 @@ int card_compare(const struct Card *c1, const struct Card *c2)
 		return (c1->suit == c2->suit) ? 0 : c1->suit - c2->suit;
 }
 
+void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
+{
+	struct CardNode *prev = l_hand->node, *curr;	/* Assumes l_hand->node exists, but is uninitialized */
+	prev->card = &hand->cards[0];
+
+	for (int i = 1; i < hand->ncards; i++) {
+		curr = malloc(sizeof(struct CardNode));
+		curr->card = &hand->cards[i];		/* Set card in new node */
+		prev->next = curr;
+		curr->next = NULL;					/* Set to NULL to indicate end of list */
+		prev = curr;
+	}
+	l_hand->ncards = hand->ncards;
+}
+
 struct Card gen_random_card()
 {
     int num, suit;
@@ -100,6 +115,8 @@ char * get_card_encoding(const struct Card *card)
 /* Note: if there is an error, this function returns a null string. */
 char * get_card_name(const struct Card *card)
 {
+	static int i = 0;
+	printf("%d: %d\n", i++, get_card_value(card));
     char *name = malloc(20 * sizeof(char));
     switch (card->number) {
         case 1: strcpy(name, "1");    	break;

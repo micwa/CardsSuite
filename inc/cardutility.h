@@ -10,6 +10,8 @@ int cards_played(const struct Hand *hand);
  * The ranking of suits is defined in carddefs.h */
 int card_compare(const struct Card *c1, const struct Card *c2);
 
+void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
+
 /* Returns a random card */
 struct Card gen_random_card();
 
