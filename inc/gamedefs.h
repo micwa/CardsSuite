@@ -9,4 +9,10 @@ struct Player {
     int nwins, nlosses;
 };
 
+struct Player_L {
+    struct LinkedHand *hand;
+    int curr_score;
+    int nwins, nlosses;
+};
+
 #endif /* GAMEDEFS_H_ */

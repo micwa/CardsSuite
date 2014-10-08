@@ -10,13 +10,19 @@ int cards_played(const struct Hand *hand);
  * The ranking of suits is defined in carddefs.h */
 int card_compare(const struct Card *c1, const struct Card *c2);
 
+/* Fills the given LinkedHand (assumes its CardNode has been initialized already, and
+overwrites any cards that one currently contains) with the given Hand. */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
+
+/* Frees the memory allocated for the LinkedHand AND for all CardNodes/their Cards */
+void free_linked_hand(struct LinkedHand *hand);
+
+/* Returns a Hand with 52 cards in order from Ace to King, in the suit order specified
+ * by carddefs.h */
+struct Hand gen_ordered_deck();
 
 /* Returns a random card */
 struct Card gen_random_card();
-
-/* Returns a Hand with 52 cards, all shuffled */
-struct Hand gen_random_deck(int shuffle_amount);
 
 /* Returns the encoding in UTF-8 of the playing card */
 char * get_card_encoding(const struct Card *card);
@@ -28,11 +34,13 @@ int get_card_value(const struct Card *card);
  * in the format: [Number], [Suit]; e.g. King of spades would be King, Spade */
 char * get_card_name(const struct Card *card);
 
-/* Splits the hand (or deck) into the specified number of Hands */
-struct Hand * split_hand(struct Hand *hand, int nhands);
+/* Adds the card to the linked list by placing the given CardNode at the end */
+void linked_hand_add(struct LinkedHand *hand, struct CardNode *node);
 
-/* Combines the two hands into one hand; does not copy NULL cards or invalid cards (i.e. number < 1 or number > 13)
- * This method allocates new memory for the Hand/cards, so free the old hands when appropriate. */
-struct Hand * squash_hands(const struct Hand *hand1, const struct Card *hand2[52]);
+/* Shuffles the given hand ntimes times */
+void shuffle_hand(struct Hand *hand, int ntimes);
+
+/* Splits the hand (or deck) into the specified number of Hands (i.e. an array) */
+struct Hand * split_hand(struct Hand *hand, int nhands);
 
 #endif /* CARDUTIL_H_ */

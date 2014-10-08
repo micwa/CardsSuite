@@ -40,12 +40,46 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 
 	for (int i = 1; i < hand->ncards; i++) {
 		curr = malloc(sizeof(struct CardNode));
-		curr->card = &hand->cards[i];		/* Set card in new node */
+		curr->card = &hand->cards[i];		/* Set card in new node; does NOT allocate new memory for Card */
 		prev->next = curr;
-		curr->next = NULL;					/* Set to NULL to indicate end of list */
+		curr->next = NULL;					/* Next MUST be set to NULL for free() to work */
 		prev = curr;
 	}
 	l_hand->ncards = hand->ncards;
+}
+
+void free_linked_hand(struct LinkedHand *hand)
+{
+	struct CardNode *node, *prev;
+
+	node = hand->node;
+	while (node != NULL) {					/* Go through nodes (assume that first one exists) */
+		free(node->card);
+		prev = node;
+		node = node->next;
+		free(prev);							/* Free current node, go on to next */
+	}
+	free(hand);
+}
+
+struct Hand gen_ordered_deck()
+{
+    struct Hand hand;
+    struct Card *cards = malloc(52 * sizeof(struct Card));
+    int *isplayed;
+
+    for (int i = 0; i < 52; i++) {			/* Populate the deck */
+        cards[i].number = i % 13 + 1;
+        cards[i].suit = i / 13;
+    }
+
+    hand.ncards = 52;
+    hand.cards = cards;						/* Remember to free() this... */
+    isplayed = malloc(hand.ncards * sizeof(int));
+    memset(isplayed, 0, hand.ncards * sizeof(int));
+    hand.isplayed = &isplayed[0];           /* ...and this! */
+
+    return hand;
 }
 
 struct Card gen_random_card()
@@ -63,43 +97,6 @@ struct Card gen_random_card()
     card.suit = suit;
 
     return card;
-}
-
-struct Hand gen_random_deck(int shuffle_amount)
-{
-    struct Hand hand;
-    struct Card *cards = malloc(52 * sizeof(struct Card));
-    struct Card temp_card;
-    int swap1, swap2;
-    int *isplayed;
-
-    for (int i = 0; i < 52; i++) {			/* Populate the deck */
-        cards[i].number = i % 13 + 1;
-        cards[i].suit = i / 13;
-    }
-
-    if (!isrand_init) {
-       	srand(time(NULL));
-       	isrand_init = 1;
-    }
-    for (int i = 0; i < shuffle_amount; i++) {
-        swap1 = rand() % 52;
-        do {
-            swap2 = rand() % 52;
-        } while (swap1 == swap2);
-
-        temp_card = cards[swap1];
-        cards[swap1] = cards[swap2];
-        cards[swap2] = temp_card;
-    }
-    
-    hand.ncards = 52;
-    hand.cards = cards;						/* Remember to free() this... */
-    isplayed = malloc(hand.ncards * sizeof(int));
-    memset(isplayed, 0, hand.ncards * sizeof(int));
-    hand.isplayed = &isplayed[0];                /* ...and this! */
-
-    return hand;
 }
 
 char * get_card_encoding(const struct Card *card)
@@ -153,6 +150,37 @@ int get_card_value(const struct Card *card)
     return value;
 }
 
+void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
+{
+	struct CardNode *base = hand->node;
+
+	while (base->next != NULL)				/* Go to the end of the list*/
+		base = base->next;
+	base->next = node;
+}
+
+void shuffle_hand(struct Hand *hand, int ntimes)
+{
+	int swap1, swap2, ncards = hand->ncards;
+	struct Card temp, *cards = hand->cards;
+	printf("NUM: %d\n", ncards);
+
+	if (!isrand_init) {
+		srand(time(NULL));
+		isrand_init = 1;
+	}
+	for (int i = 0; i < ntimes; i++) {
+		swap1 = rand() % ncards;			/* Thankfully, we have ncards */
+		do {
+			swap2 = rand() % ncards;
+		} while (swap1 == swap2);
+
+		temp = cards[swap1];
+		cards[swap1] = cards[swap2];
+		cards[swap2] = temp;
+	}
+}
+
 struct Hand * split_hand(struct Hand *hand, int nhands)
 {
 	struct Hand *hands = malloc(nhands * sizeof(struct Hand));		/* Remember to free this! */
@@ -170,36 +198,4 @@ struct Hand * split_hand(struct Hand *hand, int nhands)
 	hands[nhands - 1].ncards += 52 - counter;	/* Adjust for possible remainder */
 
 	return hands;
-}
-
-struct Hand * squash_hands(const struct Hand *hand1, const struct Card *hand2[52])
-{
-	struct Hand *hand;
-	struct Card *cards;
-	int *isplayed, count = 0;
-
-	for (int i = 0; i < hand1->ncards; i++)
-		if (hand1->cards[i].number > 0)
-			count++;
-	for (int i = 0; i < 52; i++)
-		if (hand2[i] != NULL && hand2[i]->number > 0)			/* Different because hand2[i] is already a card pointer */
-			count++;
-
-	/* Allocate memory, then fill up cards */
-	hand = malloc(sizeof(struct Hand));
-	cards = malloc(count * sizeof(struct Card));
-	isplayed = malloc(count * sizeof(int));
-
-	count = 0;
-	for (int i = 0; i < hand1->ncards; i++)
-		if (hand1->cards[i].number > 0)
-			cards[count++] = hand1->cards[i];		/* Note that this COPIES the cards, so that hand1/hand2 can be free()d */
-	for (int i = 0; i < 52; i++)
-		if (hand2[i] != NULL && hand2[i]->number > 0)
-			cards[count++] = *hand2[i];
-
-	hand->ncards = count;
-	hand->cards = cards;
-	hand->isplayed = isplayed;
-	return hand;
 }

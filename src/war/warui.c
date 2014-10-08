@@ -15,24 +15,19 @@
 #define SYS_PAUSE system("sleep 0.1");
 #endif
 
-void draw_war_board(const struct Player *player, const struct Player *cpu, const struct Card cards[])
+void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card cards[])
 {
-    char *cpu_enc, *pl_enc, *enc, *enc2;
-    int cpu_index, pl_index;				/* Index of first unplayed/number of cards unplayed */
-    int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
-    const int NUM_FRAMES = 3;
+	const int NUM_FRAMES = 3;
+	int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
+	char *cpu_enc, *pl_enc, *enc, *enc2;
 
-    cpu_index = cards_played(cpu->hand);
-    pl_index = cards_played(player->hand);
+	cpu_todraw = cpu->hand->ncards - 1;
+	pl_todraw = player->hand->ncards - 1;
+	cpu_enc = get_card_encoding(cpu->hand->node->card);
+	pl_enc = get_card_encoding(player->hand->node->card);
 
-    if (cpu_index == cpu->hand->ncards || pl_index == cpu->hand->ncards)			/* Exit if for some reason all cards played for one hand */
-        	exit(EXIT_FAILURE);
-
-    cpu_enc = get_card_encoding(&cpu->hand->cards[cpu_index]);
-    pl_enc = get_card_encoding(&player->hand->cards[pl_index]);
-    cpu_todraw = cpu->hand->ncards - cpu_index - 1;
-    pl_todraw = player->hand->ncards - pl_index - 1;
-    /* Finished initializing variables*/
+    if (cpu_todraw == -1 || pl_todraw == -1)		/* Exit: this method does not redirect to win/lose function */
+        exit(EXIT_FAILURE);
 
     /* Draw cpu on top; cards in center; won cards on right; player
          * cards on bottom. Note that this assumes there is at least 1 unplayed
