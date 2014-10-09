@@ -4,6 +4,9 @@
 /* Quits the game; also should call hands_destroy() */
 void quit_wargame();
 
+/* Resumes the current game */
+void resume_wargame();
+
 /* Saves the current game state to a text file */
 void save_wargame();
 
