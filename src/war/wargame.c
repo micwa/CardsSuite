@@ -14,7 +14,9 @@ const int SHUFFLE_AMOUNT = 1000;
 
 static enum GameState curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
-static int nturns = 0;						/* Turns played so far */
+struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
+static int nturns = 0;					/* Turns played so far */
+static struct Hand *curr_hand;			/* For memory leak purposes only */
 
 /* Set the current state to PAUSE and bring up the pause menu */
 static void pause_game()
@@ -28,7 +30,6 @@ static void play_game()
 {
 	/* For comparing current cards, and storing previous ones for drawing.
 	 * cpu is index 0, player is index 1 */
-	struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
 	struct CardNode *temp;
     int c;
     
@@ -36,7 +37,6 @@ static void play_game()
     	draw_war_board(player, cpu, (const struct Card **)ccur);	/* Since settings of ccur[] is after this */
 
         /* Prompt user to press enter, and skip over all input */
-    	nturns++;
     	printf("\n---TURN %d---\n", nturns);
     	printf("CPU's cards: %d\n", cpu->hand->ncards);
     	printf("Your cards: %d\n\n", player->hand->ncards);
@@ -45,6 +45,7 @@ static void play_game()
             if (c == 'p')
                 pause_game();
         }
+        nturns++;
 
         ccur[0] = cpu->hand->node->card;
         ccur[1] = player->hand->node->card;
@@ -90,13 +91,13 @@ static void play_game()
 /* Frees all malloc'd memory (players, hands, etc.*/
 static void players_destroy()
 {
+	if (cpu != NULL) {
+		free_linked_hand(cpu->hand, 0);
+		free(cpu);
+	    }
     if (player != NULL) {
-    	free_linked_hand(player->hand);
+    	free_linked_hand(player->hand, 0);
         free(player);
-    }
-    if (cpu != NULL) {
-    	free_linked_hand(cpu->hand);
-    	free(cpu);
     }
 }
 
@@ -104,11 +105,16 @@ void quit_wargame()
 {
 	printf("Thank you for playing. Bye!\n");
     players_destroy();
+    if (curr_hand != NULL)
+    	free_hand(curr_hand);
+
+    exit(EXIT_SUCCESS);
 }
 
 void resume_wargame()
 {
-	play_game();							/* An alias for play_game() (for now), essentially */
+	curr_state = START;
+	play_game();							/* An alias for play_game(), essentially (at least for now) */
 }
 
 void save_wargame()
@@ -120,12 +126,14 @@ void start_new_wargame()
 {
 	printf("Starting new game...\n");
     players_destroy();						/* If quitting previous game */
+    if (curr_hand != NULL)
+    	free_hand(curr_hand);
     
-    /* Set up players, then play */
+    /* Set up LinkedHand, then play */
+    struct LinkedHand *l_cpu, *l_player;
     struct Hand deck = gen_ordered_deck();
     shuffle_hand(&deck, SHUFFLE_AMOUNT);
-    struct Hand *hands = split_hand(&deck, 2);
-    struct LinkedHand *l_cpu, *l_player;
+    curr_hand = split_hand(&deck, 2);		/* Remember to free() this for a new game */
 
     cpu = malloc(sizeof(struct Player));
     player = malloc(sizeof(struct Player));
@@ -134,9 +142,8 @@ void start_new_wargame()
     l_cpu->node = malloc(sizeof(struct CardNode));
     l_player->node = malloc(sizeof(struct CardNode));
 
-    fill_linked_hand(l_cpu, &hands[0]);
-    fill_linked_hand(l_player, &hands[1]);
-    free(hands);							/* Don't need it anymore */
+    fill_linked_hand(l_cpu, &curr_hand[0]);
+    fill_linked_hand(l_player, &curr_hand[1]);
 
 	cpu->hand = l_cpu;
 	cpu->nwins = 0; cpu->nlosses = 0;
@@ -146,6 +153,7 @@ void start_new_wargame()
 	player->curr_score = 0;
     
 	nturns = 0;
+	curr_state = START;
     play_game();
 }
 

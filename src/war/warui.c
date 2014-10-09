@@ -124,23 +124,25 @@ static void show_menu_pause()
 {
 	int option;
 
-	printf("\nThe game has been paused.\n\n");
+	printf("\n---The game has been paused---\n\n");
 	printf("    1. Resume game\n");
 	printf("    2. Start a new game\n");
 	printf("    3. Show statistics\n");
-	printf("    4. Quit\n\n");
+	printf("    4. Back to main menu\n");
+	printf("    5. Quit\n\n");
 
 	do {
 		printf("Choose an option: ");
 		scanf("%1d", &option);				/* Scan only one digit and */
 		getchar();							/* ...discard the newline!!! */
-	} while (option < 1 || option > 4);
+	} while (option < 1 || option > 5);
 
 	switch (option){
 		case 1:	resume_wargame();	 	break;
 		case 2: start_new_wargame(); 	break;
 		case 3: print_stats();			break;
-		case 4: quit_wargame();			break;
+		case 4: show_war_menu(START);	break;
+		case 5: quit_wargame();			break;
 		default: printf("I've been hacked"); exit(EXIT_FAILURE);
 	}
 }

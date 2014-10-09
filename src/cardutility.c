@@ -48,13 +48,21 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 	l_hand->ncards = hand->ncards;
 }
 
-void free_linked_hand(struct LinkedHand *hand)
+void free_hand(struct Hand *hand)
+{
+	free(hand->isplayed);
+	free(hand->cards);
+	free(hand);
+}
+
+void free_linked_hand(struct LinkedHand *hand, int do_freecards)
 {
 	struct CardNode *node, *prev;
 
 	node = hand->node;
-	while (node != NULL) {					/* Go through nodes (assume that first one exists) */
-		free(node->card);
+	while (node != NULL) {					/* Go through nodes (assume that first one exists, and each node has a card) */
+		if (do_freecards)
+			free(node->card);
 		prev = node;
 		node = node->next;
 		free(prev);							/* Free current node, go on to next */
@@ -101,7 +109,7 @@ struct Card gen_random_card()
 
 char * get_card_encoding(const struct Card *card)
 {
-	char *enc = malloc(4 * sizeof(char));
+	char *enc = malloc(5 * sizeof(char));
 	strcpy(enc, CARD_UTF_PREFIX);
 	strcat(enc, CARD_SUFFIXES[card->suit]);
 	enc[3] += card->number - 1;				/* Some character addition */
@@ -112,11 +120,9 @@ char * get_card_encoding(const struct Card *card)
 /* Note: if there is an error, this function returns a null string. */
 char * get_card_name(const struct Card *card)
 {
-	static int i = 0;
-	printf("%d: %d\n", i++, get_card_value(card));
     char *name = malloc(20 * sizeof(char));
     switch (card->number) {
-        case 1: strcpy(name, "1");    	break;
+        case 1: strcpy(name, "Ace");    break;
         case 2: strcpy(name, "2");    	break;
         case 3: strcpy(name, "3");  	break;
         case 4: strcpy(name, "4");   	break;

@@ -14,8 +14,11 @@ int card_compare(const struct Card *c1, const struct Card *c2);
 overwrites any cards that one currently contains) with the given Hand. */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
-/* Frees the memory allocated for the LinkedHand AND for all CardNodes/their Cards */
-void free_linked_hand(struct LinkedHand *hand);
+/* Free the memory allocated for the Hand AND its members (cards, isplayed) */
+void free_hand(struct Hand *hand);
+
+/* Frees the memory allocated for the LinkedHand AND for all CardNodes (and for cards if specified) */
+void free_linked_hand(struct LinkedHand *hand, int do_freecards);
 
 /* Returns a Hand with 52 cards in order from Ace to King, in the suit order specified
  * by carddefs.h */
