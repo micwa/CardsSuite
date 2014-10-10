@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "wargame.h"
 #include "warui.h"
@@ -8,13 +7,13 @@
 #include "cardutility.h"
 #include "gamedefs.h"
 
-const char *STATS_FILE = "player.stats";
-const char *SAVE_FILE = "player.save";
+const char *STATS_FILE = "war.stats";
+const char *SAVE_FILE = "war.deck";
 const int SHUFFLE_AMOUNT = 1000;
 
-static enum GameState curr_state = START;
+enum GameState curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
-struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
+static struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
 static int nturns = 0;					/* Turns played so far */
 static struct Hand *curr_hand;			/* For memory leak purposes only */
 
@@ -22,7 +21,7 @@ static struct Hand *curr_hand;			/* For memory leak purposes only */
 static void pause_game()
 {
 	curr_state = PAUSE;
-	show_war_menu(curr_state);
+	show_war_menu();
 }
 
 /* Start playing the game, assuming that hands are initialized */
@@ -85,16 +84,25 @@ static void play_game()
         	player->hand->ncards += 1;
         	cpu->hand->ncards -= 1;
         }
+
+        /* If somehow the player won or lost, show the appropriate menu */
+        if (player->hand->ncards == 0) {
+        	curr_state = LOSE;
+        	show_war_menu();
+        } else if (player->hand->ncards == 52) {
+        	curr_state = WIN;
+        	show_war_menu();
+        }
     }
 }
 
-/* Frees all malloc'd memory (players, hands, etc.*/
+/* Frees all malloc'd memory (players, hands, etc.) */
 static void players_destroy()
 {
 	if (cpu != NULL) {
 		free_linked_hand(cpu->hand, 0);
 		free(cpu);
-	    }
+	}
     if (player != NULL) {
     	free_linked_hand(player->hand, 0);
         free(player);
@@ -105,8 +113,10 @@ void quit_wargame()
 {
 	printf("Thank you for playing. Bye!\n");
     players_destroy();
-    if (curr_hand != NULL)
-    	free_hand(curr_hand);
+    if (curr_hand != NULL) {
+    	free_hand(&curr_hand[0]);			/* Eh, don't need second free since first one contains the original pointers */
+    	//free_hand(&curr_hand[1], 0);		/* Non-optimal, but works */
+    }
 
     exit(EXIT_SUCCESS);
 }
@@ -119,7 +129,19 @@ void resume_wargame()
 
 void save_wargame()
 {
-
+    /*if (fsave_hand(cpu, SAVE_FILE, "w") < 0) {
+        printf("Error saving hand for cpu: returning\n");
+        return;
+    }
+    if (fsave_hand(player, SAVE_FILE, "a") < 0);            /* Append mode
+        printf("Error saving hand for player: returning\n");
+        return;
+    }
+    if (fsave_war_stats(player, STATS_FILE) < 0) {
+        printf("Error saving player stats: returning\n");
+        return;
+    }    
+    printf("\nSuccessfully saved game\n\n"); */
 }
 
 void start_new_wargame()
@@ -127,7 +149,7 @@ void start_new_wargame()
 	printf("Starting new game...\n");
     players_destroy();						/* If quitting previous game */
     if (curr_hand != NULL)
-    	free_hand(curr_hand);
+    	free_hand(&curr_hand[0]);
     
     /* Set up LinkedHand, then play */
     struct LinkedHand *l_cpu, *l_player;
@@ -137,7 +159,7 @@ void start_new_wargame()
 
     cpu = malloc(sizeof(struct Player));
     player = malloc(sizeof(struct Player));
-    l_cpu = malloc(sizeof(struct LinkedHand));		/* Per player, its LinkedHand and its node MUST be initialized */
+    l_cpu = malloc(sizeof(struct LinkedHand));		/* For each player, its LinkedHand and its node MUST be initialized */
     l_player = malloc(sizeof(struct LinkedHand));	/* (Or else fill_linked_hand()/free() will crash) */
     l_cpu->node = malloc(sizeof(struct CardNode));
     l_player->node = malloc(sizeof(struct CardNode));
@@ -164,5 +186,5 @@ void start_saved_wargame()
 
 void war()
 {
-	show_war_menu(curr_state);
+	show_war_menu();
 }

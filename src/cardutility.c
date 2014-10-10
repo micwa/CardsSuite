@@ -48,6 +48,33 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 	l_hand->ncards = hand->ncards;
 }
 
+struct Hand * fopen_hand(const char *filename, int nhands)
+{
+    struct Hand *hands = malloc(nhands * sizeof(struct Hand));
+    struct Card *cards[nhands];
+    int ncards[nhands];             /* Number of cards in each hand */
+    int card_val;
+    FILE *file = fopen(filename, "r");
+    if (file == NULL)
+        return NULL;                        /* Return NULL on failure */
+    
+    /* Go through each line until the newline */
+    for (int i = 0; i < nhands; i++) {
+        scanf("%3d", &ncards[i]);
+        cards[i] = malloc(ncards[i] * sizeof(struct Card));
+        
+        while (getchar() != '\n') {
+            scanf("%2d", &card_val);
+            cards[i][ncards[i]].number = card_val % 13 + 1;
+            cards[i][ncards[i]].suit = card_val / 13 ;
+            ncards[i]++;
+        }
+        hands[i].cards = cards[i];
+        hands[i].ncards = ncards[i];
+    }
+    return hands;
+}
+
 void free_hand(struct Hand *hand)
 {
 	free(hand->isplayed);
@@ -60,7 +87,7 @@ void free_linked_hand(struct LinkedHand *hand, int do_freecards)
 	struct CardNode *node, *prev;
 
 	node = hand->node;
-	while (node != NULL) {					/* Go through nodes (assume that first one exists, and each node has a card) */
+	while (node != NULL) {					/* Go through nodes (assume that first one exists) */
 		if (do_freecards)
 			free(node->card);
 		prev = node;
@@ -68,6 +95,24 @@ void free_linked_hand(struct LinkedHand *hand, int do_freecards)
 		free(prev);							/* Free current node, go on to next */
 	}
 	free(hand);
+}
+
+/* Returns x < 0 on failure, x > 0 on success */
+int fsave_linked_hand(const struct LinkedHand *hand, const char *filename, const char *mode)
+{
+    struct CardNode *node = hand->node;
+    FILE *file = fopen(filename, mode);
+    if (file == NULL)
+        return -1; 
+        
+    /* Write all cards on one line, space-separated */
+    fprintf(file, "%d ", hand->ncards);           /* Put ncards as first number */
+    for (; node != NULL; node = node->next)
+        fprintf(file, " %d", get_card_value(node->card));
+    fprintf(file, "\n");                          /* Newline at the end */
+    
+    fclose(file);
+    return 1;
 }
 
 struct Hand gen_ordered_deck()
@@ -160,7 +205,7 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 {
 	struct CardNode *base = hand->node;
 
-	while (base->next != NULL)				/* Go to the end of the list*/
+	while (base->next != NULL)				/* Go to the end of the list (not bothering to use one-line for loop) */
 		base = base->next;
 	base->next = node;
 }

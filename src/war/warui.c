@@ -114,7 +114,7 @@ static void show_menu_start()
 	switch (option){
 		case 1:	start_new_wargame(); 	break;
 		case 2: start_saved_wargame(); 	break;
-		case 3: print_stats();			break;
+		case 3: print_stats(); show_war_menu();	break;
 		case 4: quit_wargame();			break;
 		default: printf("I've been hacked"); exit(EXIT_FAILURE);
 	}
@@ -127,37 +127,81 @@ static void show_menu_pause()
 	printf("\n---The game has been paused---\n\n");
 	printf("    1. Resume game\n");
 	printf("    2. Start a new game\n");
-	printf("    3. Show statistics\n");
-	printf("    4. Back to main menu\n");
-	printf("    5. Quit\n\n");
+	printf("    3. Save current game\n");
+	printf("    4. Show statistics\n");
+	printf("    5. Back to main menu\n");
+	printf("    6. Quit\n\n");
 
 	do {
 		printf("Choose an option: ");
-		scanf("%1d", &option);				/* Scan only one digit and */
-		getchar();							/* ...discard the newline!!! */
-	} while (option < 1 || option > 5);
+		scanf("%1d", &option);
+		getchar();
+	} while (option < 1 || option > 6);
 
 	switch (option){
 		case 1:	resume_wargame();	 	break;
 		case 2: start_new_wargame(); 	break;
-		case 3: print_stats();			break;
-		case 4: show_war_menu(START);	break;
-		case 5: quit_wargame();			break;
+		case 3: save_wargame();			break;
+		case 4: print_stats(); show_war_menu();	break;
+		case 5: show_war_menu(START);	break;
+		case 6: quit_wargame();			break;
 		default: printf("I've been hacked"); exit(EXIT_FAILURE);
 	}
 }
 static void show_menu_win()
 {
+	int option;
 
+	printf("\nCONGRATULATIONS on hacking your way to victory! ");
+	printf("If you did win legitimately, however, either a) you killed your Enter key or b) your computer does not know how to generate random numbers.");
+	printf("\n\nPlay again?\n");
+	printf("    1. Start a new game\n");
+	printf("    2. Show statistics\n");
+	printf("    3. Quit\n");
+
+	do {
+		printf("Choose an option: ");
+		scanf("%1d", &option);
+		getchar();
+	} while (option < 1 || option > 3);
+
+	switch (option){
+		case 1: start_new_wargame(); 	break;
+		case 2: print_stats(); show_war_menu();	break;
+		case 3: quit_wargame();			break;
+		default: printf("I've been hacked"); exit(EXIT_FAILURE);
+	}
 }
 static void show_menu_lose()
 {
+	int option;
 
+	printf("\nCONGRATULATIONS on somehow losing! ");
+	printf("I don't know why you did it, but you beat the odds and lost!");
+	printf("\n\nPlay again?\n");
+	printf("    1. Start a new game\n");
+	printf("    2. Show statistics\n");
+	printf("    3. Quit\n");
+
+	do {
+		printf("Choose an option: ");
+		scanf("%1d", &option);
+		getchar();
+	} while (option < 1 || option > 3);
+
+	switch (option){
+	case 1: start_new_wargame(); 	break;
+	case 2: print_stats(); show_war_menu();	break;
+	case 3: quit_wargame();			break;
+	default: printf("I've been hacked"); exit(EXIT_FAILURE);
+	}
 }
 
-void show_war_menu(enum GameState state)
+void show_war_menu()
 {
-	switch (state) {
+	extern enum GameState curr_state;
+
+	switch (curr_state) {
 		case START: show_menu_start();	break;
 		case PAUSE: show_menu_pause(); 	break;
 		case WIN: 	show_menu_win();	break;

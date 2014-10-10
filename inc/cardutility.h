@@ -14,11 +14,21 @@ int card_compare(const struct Card *c1, const struct Card *c2);
 overwrites any cards that one currently contains) with the given Hand. */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
+/* Creates an array of hands from the hand(s) stored in filename; the user must specify
+ * the number of hands (i.e. number of lines to read). 
+ * Distinguishes beween regular Hands and LinkedHands - for LinkedHands, set isplayed
+ * to all 0s. (implement later) */
+struct Hand * fopen_hand(const char *filename, int nhands);
+
 /* Free the memory allocated for the Hand AND its members (cards, isplayed) */
 void free_hand(struct Hand *hand);
 
 /* Frees the memory allocated for the LinkedHand AND for all CardNodes (and for cards if specified) */
 void free_linked_hand(struct LinkedHand *hand, int do_freecards);
+
+/* Save the given LinkedHand to the specified file, writing using the specified fopen mode.
+ * This function should write each hand on one line, and append a newline character at the end. */
+int fsave_linked_hand(const struct LinkedHand *hand, const char *filename, const char *mode);
 
 /* Returns a Hand with 52 cards in order from Ace to King, in the suit order specified
  * by carddefs.h */
