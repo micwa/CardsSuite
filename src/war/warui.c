@@ -9,7 +9,7 @@
 
 #ifdef _WIN32
 #define BOARD_CLEAR system("cls");
-#define SYS_PAUSE system("ping 127.0.0.1 -n 2";
+#define SYS_PAUSE system("ping 1.1.1.1 -n 1 -w 100 > nul");
 #else   /* Assume POSIX */
 #define BOARD_CLEAR system("clear");		/* For some reason, also prints weird characters on screen */
 #define SYS_PAUSE system("sleep 0.1");
@@ -17,6 +17,10 @@
 
 void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[])
 {
+    #ifdef _WIN32
+        system("chcp 65001");               /* Change encoding */
+    #endif
+    
 	const int NUM_FRAMES = 3;
 	int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
 	char *cpu_enc, *pl_enc, *enc, *enc2;

@@ -17,6 +17,11 @@ static struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
 static int nturns = 0;					/* Turns played so far */
 static struct Hand *curr_hand;			/* For memory leak purposes only */
 
+static int fsave_war_stats()
+{
+	;
+}
+
 /* Set the current state to PAUSE and bring up the pause menu */
 static void pause_game()
 {
@@ -129,19 +134,19 @@ void resume_wargame()
 
 void save_wargame()
 {
-    /*if (fsave_hand(cpu, SAVE_FILE, "w") < 0) {
+    if (fsave_linked_hand(cpu->hand, SAVE_FILE, "w") < 0) {
         printf("Error saving hand for cpu: returning\n");
         return;
     }
-    if (fsave_hand(player, SAVE_FILE, "a") < 0);            /* Append mode
+    if (fsave_linked_hand(player->hand, SAVE_FILE, "a") < 0) {         	/* Append mode */
         printf("Error saving hand for player: returning\n");
         return;
     }
-    if (fsave_war_stats(player, STATS_FILE) < 0) {
+    if (fsave_war_stats() < 0) {
         printf("Error saving player stats: returning\n");
         return;
     }    
-    printf("\nSuccessfully saved game\n\n"); */
+    printf("\nSuccessfully saved game\n\n");
 }
 
 void start_new_wargame()
