@@ -18,7 +18,7 @@
 void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[])
 {
     #ifdef _WIN32
-        system("chcp 65001");               /* Change encoding */
+        system("chcp 65001 > nul");               /* Change encoding */
     #endif
     
 	const int NUM_FRAMES = 3;
@@ -61,7 +61,7 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     		free(enc);
     		free(enc2);
     	}
-    	printf("\n");
+    	printf("\n\n");
     	if (i != 0) {
     		if (i == 2)
     			printf("%35s", pl_enc);
@@ -101,7 +101,7 @@ static void print_stats()
 /* Start menu */
 static void show_menu_start()
 {
-	int option;
+	int option = 0;
 
 	printf("Welcome to WAR!\n\n");
 	printf("    1. Start new game\n");
@@ -112,7 +112,8 @@ static void show_menu_start()
 	do {
 		printf("Choose an option: ");
 		scanf("%1d", &option);				/* Scan only one digit and */
-		getchar();							/* ...discard the newline!!! */
+		while (getchar() != '\n')			/* ...discard the newline!!! */
+			;
 	} while (option < 1 || option > 4);
 
 	switch (option){
@@ -126,35 +127,34 @@ static void show_menu_start()
 
 static void show_menu_pause()
 {
-	int option;
+	int option = 0;
 
 	printf("\n---The game has been paused---\n\n");
 	printf("    1. Resume game\n");
 	printf("    2. Start a new game\n");
 	printf("    3. Save current game\n");
 	printf("    4. Show statistics\n");
-	printf("    5. Back to main menu\n");
-	printf("    6. Quit\n\n");
+	printf("    5. Quit\n\n");
 
 	do {
 		printf("Choose an option: ");
 		scanf("%1d", &option);
-		getchar();
-	} while (option < 1 || option > 6);
+		while (getchar() != '\n')
+			;
+	} while (option < 1 || option > 5);
 
 	switch (option){
 		case 1:	resume_wargame();	 	break;
 		case 2: start_new_wargame(); 	break;
-		case 3: save_wargame();			break;
-		case 4: print_stats(); show_war_menu();	break;
-		case 5: show_war_menu(START);	break;
-		case 6: quit_wargame();			break;
+		case 3: save_wargame();	show_war_menu(); 	break;
+		case 4: print_stats(); show_war_menu();		break;
+		case 5: quit_wargame();			break;
 		default: printf("I've been hacked"); exit(EXIT_FAILURE);
 	}
 }
 static void show_menu_win()
 {
-	int option;
+	int option = 0;
 
 	printf("\nCONGRATULATIONS on hacking your way to victory! ");
 	printf("If you did win legitimately, however, either a) you killed your Enter key or b) your computer does not know how to generate random numbers.");
@@ -166,7 +166,8 @@ static void show_menu_win()
 	do {
 		printf("Choose an option: ");
 		scanf("%1d", &option);
-		getchar();
+		while (getchar() != '\n')
+			;
 	} while (option < 1 || option > 3);
 
 	switch (option){
@@ -178,7 +179,7 @@ static void show_menu_win()
 }
 static void show_menu_lose()
 {
-	int option;
+	int option = 0;
 
 	printf("\nCONGRATULATIONS on somehow losing! ");
 	printf("I don't know why you did it, but you beat the odds and lost!");
@@ -190,7 +191,8 @@ static void show_menu_lose()
 	do {
 		printf("Choose an option: ");
 		scanf("%1d", &option);
-		getchar();
+		while (getchar() != '\n')
+		;
 	} while (option < 1 || option > 3);
 
 	switch (option){

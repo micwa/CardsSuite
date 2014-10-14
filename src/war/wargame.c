@@ -7,19 +7,28 @@
 #include "cardutility.h"
 #include "gamedefs.h"
 
-const char *STATS_FILE = "war.stats";
-const char *SAVE_FILE = "war.deck";
-const int SHUFFLE_AMOUNT = 1000;
+static const char *STATS_FILE = "war.stats";
+static const char *SAVE_FILE = "war.deck";
+static const int SHUFFLE_AMOUNT = 1000;
 
 enum GameState curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
-static struct Card *ccur[2] = { NULL, NULL };	/* The played cards */
+static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
 static int nturns = 0;					/* Turns played so far */
-static struct Hand *curr_hand;			/* For memory leak purposes only */
+static struct Hand *curr_hand = NULL;	/* For memory leak purposes only */
+static int opened_hand = 0;
 
-static int fsave_war_stats()
+static void fload_stats()
 {
-	;
+	cpu->nwins = 0;
+	cpu->nlosses = 0;
+	player->nwins = 0;
+	player->nlosses = 0;
+}
+
+static int fsave_stats()
+{
+	return 1;
 }
 
 /* Set the current state to PAUSE and bring up the pause menu */
@@ -38,7 +47,7 @@ static void play_game()
     int c;
     
     while (curr_state == START) {
-    	draw_war_board(player, cpu, (const struct Card **)ccur);	/* Since settings of ccur[] is after this */
+    	draw_war_board(player, cpu, (const struct Card **)ccur);	/* Since setting of ccur[] is after this */
 
         /* Prompt user to press enter, and skip over all input */
     	printf("\n---TURN %d---\n", nturns);
@@ -112,16 +121,32 @@ static void players_destroy()
     	free_linked_hand(player->hand, 0);
         free(player);
     }
+    if (curr_hand != NULL) {
+    	if (opened_hand) {						/* Solution for now: if no fopen_hand(), curr_hand */
+    		free_hand(&curr_hand[0], 0);		/* was malloc'd; else, is just an array */
+    		free_hand(&curr_hand[1], 0);
+    		free(curr_hand);
+    	}
+    	else
+    		free_hand(curr_hand, 1);
+    }
+}
+
+/* Allocates memory for the players, their LinkedHands, and the first CardNode */
+static void players_init()
+{
+	cpu = malloc(sizeof(struct Player));
+	player = malloc(sizeof(struct Player));
+	cpu->hand = malloc(sizeof(struct LinkedHand));			/* For each player, its LinkedHand and its node MUST be initialized */
+	player->hand = malloc(sizeof(struct LinkedHand));		/* (Or else fill_linked_hand()/free() will crash) */
+	cpu->hand->node = malloc(sizeof(struct CardNode));
+	player->hand->node = malloc(sizeof(struct CardNode));
 }
 
 void quit_wargame()
 {
 	printf("Thank you for playing. Bye!\n");
     players_destroy();
-    if (curr_hand != NULL) {
-    	free_hand(&curr_hand[0]);			/* Eh, don't need second free since first one contains the original pointers */
-    	//free_hand(&curr_hand[1], 0);		/* Non-optimal, but works */
-    }
 
     exit(EXIT_SUCCESS);
 }
@@ -134,49 +159,43 @@ void resume_wargame()
 
 void save_wargame()
 {
-    if (fsave_linked_hand(cpu->hand, SAVE_FILE, "w") < 0) {
-        printf("Error saving hand for cpu: returning\n");
-        return;
-    }
-    if (fsave_linked_hand(player->hand, SAVE_FILE, "a") < 0) {         	/* Append mode */
-        printf("Error saving hand for player: returning\n");
-        return;
-    }
-    if (fsave_war_stats() < 0) {
+	FILE *file = fopen(SAVE_FILE, "w");
+	if (file == NULL) {
+		printf("Error writing save file: returning\n");
+		return;
+	}
+	/* Save the turn number */
+	fprintf(file, "%d\n", nturns);
+	fsave_linked_hand(cpu->hand, file);
+	fsave_linked_hand(player->hand, file);
+
+    if (fsave_stats() < 0) {
         printf("Error saving player stats: returning\n");
         return;
-    }    
-    printf("\nSuccessfully saved game\n\n");
+    }
+    fclose(file);
+    printf("\nSuccessfully saved game!\n\n");
 }
 
 void start_new_wargame()
 {
 	printf("Starting new game...\n");
     players_destroy();						/* If quitting previous game */
-    if (curr_hand != NULL)
-    	free_hand(&curr_hand[0]);
     
     /* Set up LinkedHand, then play */
-    struct LinkedHand *l_cpu, *l_player;
-    struct Hand deck = gen_ordered_deck();
-    shuffle_hand(&deck, SHUFFLE_AMOUNT);
-    curr_hand = split_hand(&deck, 2);		/* Remember to free() this for a new game */
+    struct Hand *deck = gen_ordered_deck();
+    shuffle_hand(deck, SHUFFLE_AMOUNT);
+    curr_hand = split_hand(deck, 2);
 
-    cpu = malloc(sizeof(struct Player));
-    player = malloc(sizeof(struct Player));
-    l_cpu = malloc(sizeof(struct LinkedHand));		/* For each player, its LinkedHand and its node MUST be initialized */
-    l_player = malloc(sizeof(struct LinkedHand));	/* (Or else fill_linked_hand()/free() will crash) */
-    l_cpu->node = malloc(sizeof(struct CardNode));
-    l_player->node = malloc(sizeof(struct CardNode));
+    players_init();
+    fill_linked_hand(cpu->hand, &curr_hand[0]);
+    fill_linked_hand(player->hand, &curr_hand[1]);
+    opened_hand = 0;
+    free(curr_hand);						/* Because we don't need this anymore */
+    curr_hand = deck;
 
-    fill_linked_hand(l_cpu, &curr_hand[0]);
-    fill_linked_hand(l_player, &curr_hand[1]);
-
-	cpu->hand = l_cpu;
-	cpu->nwins = 0; cpu->nlosses = 0;
+	fload_stats();
 	cpu->curr_score = 0;
-	player->hand = l_player;
-	player->nwins = 0; player->nlosses = 0;
 	player->curr_score = 0;
     
 	nturns = 0;
@@ -186,7 +205,34 @@ void start_new_wargame()
 
 void start_saved_wargame()
 {
-	printf("Saved game started\n");
+	players_destroy();
+
+	int turns;
+	FILE *file = fopen(SAVE_FILE, "r");
+	if (file == NULL) {
+		printf("No save file found, or error opening file.\n");
+		show_war_menu();
+		return;
+	}
+	/* Get the turn number first */
+	fscanf(file, "%9d", &turns);
+	while (fgetc(file) != '\n')
+		;
+	curr_hand = fopen_hand(file, 2);
+	fclose(file);
+
+	players_init();
+	fill_linked_hand(cpu->hand, &curr_hand[0]);
+	fill_linked_hand(player->hand, &curr_hand[1]);
+	opened_hand = 1;
+
+	fload_stats();
+	cpu->curr_score = 0;
+	player->curr_score = 0;
+
+	nturns = turns;
+	curr_state = START;
+	play_game();
 }
 
 void war()

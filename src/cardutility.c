@@ -48,38 +48,44 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 	l_hand->ncards = hand->ncards;
 }
 
-struct Hand * fopen_hand(const char *filename, int nhands)
+struct Hand * fopen_hand(FILE *file, int nhands)
 {
-    struct Hand *hands = malloc(nhands * sizeof(struct Hand));
+    struct Hand *hands;
     struct Card *cards[nhands];
-    int ncards[nhands];             /* Number of cards in each hand */
-    int card_val;
-    FILE *file = fopen(filename, "r");
-    if (file == NULL)
-        return NULL;                        /* Return NULL on failure */
+    int ncards[nhands], counter[nhands];    /* Number of cards in each hand; counter for error-checking */
+    int card_val, c;
     
+    hands = malloc(nhands * sizeof(struct Hand));
     /* Go through each line until the newline */
     for (int i = 0; i < nhands; i++) {
-        scanf("%3d", &ncards[i]);
+        fscanf(file, "%3d", &ncards[i]);    /* Max # of cards = 999 */
         cards[i] = malloc(ncards[i] * sizeof(struct Card));
+        counter[i] = 0;
         
-        while (getchar() != '\n') {
-            scanf("%2d", &card_val);
-            cards[i][ncards[i]].number = card_val % 13 + 1;
-            cards[i][ncards[i]].suit = card_val / 13 ;
-            ncards[i]++;
+        while ((c = fgetc(file)) != '\n') {
+            fscanf(file, "%3d", &card_val);
+            cards[i][counter[i]].number = card_val % 13 + 1;
+            cards[i][counter[i]].suit = card_val / 13 ;
+            counter[i]++;
+            printf("%d: %d\n", counter[i], card_val);
+        }
+        if (ncards[i] != counter[i]) {
+        	printf("Hey, no cheating.\n");
+        	exit(EXIT_FAILURE);
         }
         hands[i].cards = cards[i];
         hands[i].ncards = ncards[i];
+        hands[i].isplayed = malloc(ncards[i] * sizeof(int));
     }
     return hands;
 }
 
-void free_hand(struct Hand *hand)
+void free_hand(struct Hand *hand, int do_free_hand)
 {
 	free(hand->isplayed);
 	free(hand->cards);
-	free(hand);
+	if (do_free_hand)
+		free(hand);
 }
 
 void free_linked_hand(struct LinkedHand *hand, int do_freecards)
@@ -87,37 +93,30 @@ void free_linked_hand(struct LinkedHand *hand, int do_freecards)
 	struct CardNode *node, *prev;
 
 	node = hand->node;
-	while (node != NULL) {					/* Go through nodes (assume that first one exists) */
+	while (node != NULL) {					/* Go through nodes, freeing current one and going on to the next */
 		if (do_freecards)
 			free(node->card);
 		prev = node;
 		node = node->next;
-		free(prev);							/* Free current node, go on to next */
+		free(prev);
 	}
 	free(hand);
 }
 
-/* Returns x < 0 on failure, x > 0 on success */
-int fsave_linked_hand(const struct LinkedHand *hand, const char *filename, const char *mode)
+void fsave_linked_hand(const struct LinkedHand *hand, FILE *file)
 {
     struct CardNode *node = hand->node;
-    FILE *file = fopen(filename, mode);
-    if (file == NULL)
-        return -1; 
-        
+
     /* Write all cards on one line, space-separated */
-    fprintf(file, "%d ", hand->ncards);           /* Put ncards as first number */
+    fprintf(file, "%d", hand->ncards);           	/* Put ncards as first number */
     for (; node != NULL; node = node->next)
         fprintf(file, " %d", get_card_value(node->card));
-    fprintf(file, "\n");                          /* Newline at the end */
-    
-    fclose(file);
-    return 1;
+    fprintf(file, "\n");                          	/* Newline at the end */
 }
 
-struct Hand gen_ordered_deck()
+struct Hand * gen_ordered_deck()
 {
-    struct Hand hand;
+    struct Hand *hand = malloc(sizeof(struct Hand));
     struct Card *cards = malloc(52 * sizeof(struct Card));
     int *isplayed;
 
@@ -125,12 +124,11 @@ struct Hand gen_ordered_deck()
         cards[i].number = i % 13 + 1;
         cards[i].suit = i / 13;
     }
-
-    hand.ncards = 52;
-    hand.cards = cards;						/* Remember to free() this... */
-    isplayed = malloc(hand.ncards * sizeof(int));
-    memset(isplayed, 0, hand.ncards * sizeof(int));
-    hand.isplayed = &isplayed[0];           /* ...and this! */
+    hand->ncards = 52;
+    hand->cards = cards;					/* Remember to free() this... */
+    isplayed = malloc(hand->ncards * sizeof(int));
+    memset(isplayed, 0, hand->ncards * sizeof(int));
+    hand->isplayed = isplayed;           	/* ...and this! */
 
     return hand;
 }
@@ -240,13 +238,13 @@ struct Hand * split_hand(struct Hand *hand, int nhands)
 	for (int i = 0; i < nhands; i++) {
 		/* Assign to hand[i] an array of size 52 / nhands. Note that this
 		 * uses the cards/isplayed in the Hand parameter - no new memory is allocated
-         * EXCEPT for the Hands themselves. */
+         * EXCEPT for the array of Hands themselves. */
 		hands[i].cards = &hand->cards[52 / nhands * i];
         hands[i].isplayed = &hand->isplayed[52 / nhands * i];
 		hands[i].ncards = 52 / nhands;
 		counter += hands[i].ncards;
 	}
-	hands[nhands - 1].ncards += 52 - counter;	/* Adjust for possible remainder */
+	hands[nhands - 1].ncards += 52 - counter;	    /* Adjust for possible remainder */
 
 	return hands;
 }

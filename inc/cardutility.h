@@ -1,6 +1,7 @@
 #ifndef CARDUTIL_H_
 #define CARDUTIL_H_
 
+#include <stdio.h>
 #include "carddefs.h"
 
 /* Returns the number of cards that have been played in the given hand  */
@@ -14,25 +15,25 @@ int card_compare(const struct Card *c1, const struct Card *c2);
 overwrites any cards that one currently contains) with the given Hand. */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
-/* Creates an array of hands from the hand(s) stored in filename; the user must specify
+/* Creates an array of hands from the hand(s) stored in the FILE; the user must specify
  * the number of hands (i.e. number of lines to read). 
- * Distinguishes beween regular Hands and LinkedHands - for LinkedHands, set isplayed
+ * Distinguishes between regular Hands and LinkedHands - for LinkedHands, set isplayed
  * to all 0s. (implement later) */
-struct Hand * fopen_hand(const char *filename, int nhands);
+struct Hand * fopen_hand(FILE *file, int nhands);
 
 /* Free the memory allocated for the Hand AND its members (cards, isplayed) */
-void free_hand(struct Hand *hand);
+void free_hand(struct Hand *hand, int do_free_hand);
 
 /* Frees the memory allocated for the LinkedHand AND for all CardNodes (and for cards if specified) */
 void free_linked_hand(struct LinkedHand *hand, int do_freecards);
 
-/* Save the given LinkedHand to the specified file, writing using the specified fopen mode.
- * This function should write each hand on one line, and append a newline character at the end. */
-int fsave_linked_hand(const struct LinkedHand *hand, const char *filename, const char *mode);
+/* Save the given LinkedHand to the specified file. This function should write the whole
+ * hand on one line, and append a newline character at the end. */
+void fsave_linked_hand(const struct LinkedHand *hand, FILE *file);
 
-/* Returns a Hand with 52 cards in order from Ace to King, in the suit order specified
- * by carddefs.h */
-struct Hand gen_ordered_deck();
+/* Returns a Hand pointer with 52 cards in order from Ace to King, in the suit order
+ * specified by carddefs.h */
+struct Hand * gen_ordered_deck();
 
 /* Returns a random card */
 struct Card gen_random_card();
