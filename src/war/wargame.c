@@ -7,27 +7,47 @@
 #include "cardutility.h"
 #include "gamedefs.h"
 
-static const char *STATS_FILE = "war.stats";
-static const char *SAVE_FILE = "war.deck";
+const char *WAR_STATS = "war.stats";
+const char *WAR_SAVE = "war.deck";
 static const int SHUFFLE_AMOUNT = 1000;
 
 enum GameState curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
-static int nturns = 0;					/* Turns played so far */
-static struct Hand *curr_hand = NULL;	/* For memory leak purposes only */
+static int nturns = 0;						/* Turns played so far */
+static struct Hand *curr_hand = NULL;		/* For memory leak purposes only */
 static int opened_hand = 0;
 
 static void fload_stats()
 {
-	cpu->nwins = 0;
-	cpu->nlosses = 0;
-	player->nwins = 0;
-	player->nlosses = 0;
+	FILE *file = fopen(WAR_STATS, "r");
+	if (file == NULL) {						/* Default: set everything to 0 */
+		cpu->nwins = 1;
+		cpu->nlosses = 0;
+		cpu->curr_score = 0;
+		player->nwins = 2;
+		player->nlosses = 3;
+		player->curr_score = 0;
+	} else {
+		fscanf(file, "%9d %9d %9d", &cpu->nwins, &cpu->nlosses, &cpu->curr_score);		/* Overflow protection */
+		while (fgetc(file) != '\n')
+			;
+		fscanf(file, "%9d %9d %9d", &player->nwins, &player->nlosses, &player->curr_score);
+		fclose(file);
+	}
 }
 
+/* Writes to the stats file the players' stats, one player per line terminating
+ * with a newline character. Returns 1 on success, -1 on failure */
 static int fsave_stats()
 {
+	FILE *file = fopen(WAR_STATS, "w");
+	if (file == NULL)
+		return -1;
+
+	fprintf(file, "%d %d %d\n", cpu->nwins, cpu->nlosses, cpu->curr_score);
+	fprintf(file, "%d %d %d\n", player->nwins, player->nlosses, player->curr_score);
+	fclose(file);
 	return 1;
 }
 
@@ -99,12 +119,14 @@ static void play_game()
         	cpu->hand->ncards -= 1;
         }
 
-        /* If somehow the player won or lost, show the appropriate menu */
+        /* If somehow the player won or lost, save stats, show the appropriate menu */
         if (player->hand->ncards == 0) {
         	curr_state = LOSE;
+        	fsave_stats();
         	show_war_menu();
         } else if (player->hand->ncards == 52) {
         	curr_state = WIN;
+        	fsave_stats();
         	show_war_menu();
         }
     }
@@ -159,16 +181,16 @@ void resume_wargame()
 
 void save_wargame()
 {
-	FILE *file = fopen(SAVE_FILE, "w");
+	FILE *file = fopen(WAR_SAVE, "w");
 	if (file == NULL) {
 		printf("Error writing save file: returning\n");
 		return;
 	}
 	/* Save the turn number */
 	fprintf(file, "%d\n", nturns);
+
 	fsave_linked_hand(cpu->hand, file);
 	fsave_linked_hand(player->hand, file);
-
     if (fsave_stats() < 0) {
         printf("Error saving player stats: returning\n");
         return;
@@ -182,21 +204,19 @@ void start_new_wargame()
 	printf("Starting new game...\n");
     players_destroy();						/* If quitting previous game */
     
-    /* Set up LinkedHand, then play */
+    /* Set up LinkedHands, then play */
     struct Hand *deck = gen_ordered_deck();
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     curr_hand = split_hand(deck, 2);
 
+    /* Initialize players, load stats */
     players_init();
+    fload_stats();
     fill_linked_hand(cpu->hand, &curr_hand[0]);
     fill_linked_hand(player->hand, &curr_hand[1]);
     opened_hand = 0;
     free(curr_hand);						/* Because we don't need this anymore */
     curr_hand = deck;
-
-	fload_stats();
-	cpu->curr_score = 0;
-	player->curr_score = 0;
     
 	nturns = 0;
 	curr_state = START;
@@ -208,7 +228,7 @@ void start_saved_wargame()
 	players_destroy();
 
 	int turns;
-	FILE *file = fopen(SAVE_FILE, "r");
+	FILE *file = fopen(WAR_SAVE, "r");
 	if (file == NULL) {
 		printf("No save file found, or error opening file.\n");
 		show_war_menu();
@@ -222,13 +242,10 @@ void start_saved_wargame()
 	fclose(file);
 
 	players_init();
+	fload_stats();
 	fill_linked_hand(cpu->hand, &curr_hand[0]);
 	fill_linked_hand(player->hand, &curr_hand[1]);
 	opened_hand = 1;
-
-	fload_stats();
-	cpu->curr_score = 0;
-	player->curr_score = 0;
 
 	nturns = turns;
 	curr_state = START;

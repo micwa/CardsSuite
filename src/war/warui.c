@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 
 #include "cardutility.h"
 #include "gamedefs.h"
@@ -8,6 +9,7 @@
 #include "wargame.h"
 
 #ifdef _WIN32
+//#include <windows.h>
 #define BOARD_CLEAR system("cls");
 #define SYS_PAUSE system("ping 1.1.1.1 -n 1 -w 100 > nul");
 #else   /* Assume POSIX */
@@ -15,12 +17,34 @@
 #define SYS_PAUSE system("sleep 0.1");
 #endif
 
+/* For printing UTF-8 formatted strings
+static void m_printf(char *format, const char *text)
+{
+#ifdef _WIN32
+	if (!SetConsoleOutputCP(CP_UTF8))
+	{
+		printf("SetConsoleOutputCP(CP_UTF8) failed");
+		exit(EXIT_FAILURE);
+	}
+	wchar_t *w_text;
+	int len = MultiByteToWideChar(CP_UTF8, 0, text, -1, 0, 0);
+	w_text = malloc(len * sizeof(wchar_t));
+	MultiByteToWideChar(CP_UTF8, 0, text, -1, w_text, len);
+
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE),
+	                   w_text,
+	                   len - 1,
+	                   NULL,
+	                   NULL);
+	//wprintf("%8s", w_text);
+	free(w_text);
+#else
+	printf(format, text);
+#endif
+} */
+
 void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[])
 {
-    #ifdef _WIN32
-        system("chcp 65001 > nul");               /* Change encoding */
-    #endif
-    
 	const int NUM_FRAMES = 3;
 	int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
 	char *cpu_enc, *pl_enc, *enc, *enc2;
@@ -34,12 +58,12 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
         exit(EXIT_FAILURE);
 
     /* Draw cpu on top; cards in center; won cards on right; player
-         * cards on bottom. Note that this assumes there is at least 1 unplayed
-         * card in each player's hand. */
+     * cards on bottom. Note that this assumes there is at least 1 unplayed
+     * card in each player's hand. */
     for (int i = 0; i < NUM_FRAMES; i++) {
     	BOARD_CLEAR;                        /* First clear the board */
     	printf("\n");						/* Board top */
-    	for (int i = 0; i < cpu_todraw; i++)
+    	for (int j = 0; j < cpu_todraw; j++)
     		printf("%s   ", CARD_BACK);
     	printf("\n");
 
@@ -51,7 +75,7 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     			printf("%35s", CARD_BACK);
     	}
     	else {
-    		printf("%35s", CARD_BACK);		/* Put card back closer to hand */
+    		printf("%35s", CARD_BACK);	/* Put card back closer to hand */
     		printf("\n\n");
     	}
     	if (i != 0 && cards[0] != NULL && cpu->curr_score == 1) {
@@ -71,7 +95,7 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     	if (i != 0 && cards[0] != NULL && player->curr_score == 1) {
     		enc = get_card_encoding(cards[0]);
     		enc2 = get_card_encoding(cards[1]);
-    		printf("%25s ", enc2); printf("%5s", enc);		/* Flip order */
+    		printf("%25s ", enc2); printf("%5s", enc);	/* Flip order */
     		free(enc);
     		free(enc2);
     	}
@@ -81,21 +105,59 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     		printf("%35s", CARD_BACK);
 
     	printf("\n");						/* Board bottom */
-    	for (int i = 0; i < pl_todraw; i++)
+    	for (int j = 0; j < pl_todraw; j++)
     		printf("%s   ", CARD_BACK);
     	printf("\n");
     	if (i != NUM_FRAMES)				/* Only pause if not on last "frame" */
     		SYS_PAUSE;
     }
-
     free(cpu_enc);
     free(pl_enc);
+}
+
+/* "Safe" scanf() for one digit only */
+static void getopt(int *option)
+{
+	scanf("%1d", option);
+	while (getchar() != '\n')
+		;
 }
 
 /* Prints game statistics */
 static void print_stats()
 {
-	printf("Player stats:");
+	extern const char *WAR_STATS;
+	int cpu_wins = 0, cpu_losses = 0, p_wins = 0, p_losses = 0;
+	double cpu_perc = 0, p_perc = 0;
+	FILE *file = fopen(WAR_STATS, "r");
+	if (file != NULL) {
+		fscanf(file, "%9d %9d", &cpu_wins, &cpu_losses);
+		while (fgetc(file) != '\n')
+			;
+		fscanf(file, "%9d %9d", &p_wins, &p_losses);
+
+		/* Percentage-calculating time! */
+		if (cpu_wins > 0 && cpu_losses == 0)
+			cpu_perc = 100;
+		else
+			cpu_perc = cpu_wins * 100.0 / (cpu_wins + cpu_losses);
+
+		if (p_wins > 0 && p_losses == 0)
+			p_perc = 100;
+		else
+			p_perc = p_wins * 100.0 / (p_wins + p_losses);
+		fclose(file);
+	}
+
+	printf("------------------------------\n\n");
+	printf("Player stats:\n\n");
+	printf("  CPU wins: %d\n", 		cpu_wins);
+	printf("  CPU losses: %d\n", 	cpu_losses);
+	printf("  CPU Win%%: %d%%\n\n",		(int)cpu_perc);
+	printf("  Player wins: %d\n", 	p_wins);
+	printf("  Player losses: %d\n", p_losses);
+	printf("  Player Win%%: %d%%\n\n",	(int)p_perc);
+	printf("------------------------------\n\n");
 }
 
 /* Start menu */
@@ -111,9 +173,7 @@ static void show_menu_start()
 
 	do {
 		printf("Choose an option: ");
-		scanf("%1d", &option);				/* Scan only one digit and */
-		while (getchar() != '\n')			/* ...discard the newline!!! */
-			;
+		getopt(&option);
 	} while (option < 1 || option > 4);
 
 	switch (option){
@@ -138,9 +198,7 @@ static void show_menu_pause()
 
 	do {
 		printf("Choose an option: ");
-		scanf("%1d", &option);
-		while (getchar() != '\n')
-			;
+		getopt(&option);
 	} while (option < 1 || option > 5);
 
 	switch (option){
@@ -165,9 +223,7 @@ static void show_menu_win()
 
 	do {
 		printf("Choose an option: ");
-		scanf("%1d", &option);
-		while (getchar() != '\n')
-			;
+		getopt(&option);
 	} while (option < 1 || option > 3);
 
 	switch (option){
@@ -177,6 +233,7 @@ static void show_menu_win()
 		default: printf("I've been hacked"); exit(EXIT_FAILURE);
 	}
 }
+
 static void show_menu_lose()
 {
 	int option = 0;
@@ -190,9 +247,7 @@ static void show_menu_lose()
 
 	do {
 		printf("Choose an option: ");
-		scanf("%1d", &option);
-		while (getchar() != '\n')
-		;
+		getopt(&option);
 	} while (option < 1 || option > 3);
 
 	switch (option){
