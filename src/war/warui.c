@@ -9,39 +9,12 @@
 #include "wargame.h"
 
 #ifdef _WIN32
-//#include <windows.h>
 #define BOARD_CLEAR system("cls");
 #define SYS_PAUSE system("ping 1.1.1.1 -n 1 -w 100 > nul");
 #else   /* Assume POSIX */
 #define BOARD_CLEAR system("clear");		/* For some reason, also prints weird characters on screen */
 #define SYS_PAUSE system("sleep 0.1");
 #endif
-
-/* For printing UTF-8 formatted strings
-static void m_printf(char *format, const char *text)
-{
-#ifdef _WIN32
-	if (!SetConsoleOutputCP(CP_UTF8))
-	{
-		printf("SetConsoleOutputCP(CP_UTF8) failed");
-		exit(EXIT_FAILURE);
-	}
-	wchar_t *w_text;
-	int len = MultiByteToWideChar(CP_UTF8, 0, text, -1, 0, 0);
-	w_text = malloc(len * sizeof(wchar_t));
-	MultiByteToWideChar(CP_UTF8, 0, text, -1, w_text, len);
-
-	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE),
-	                   w_text,
-	                   len - 1,
-	                   NULL,
-	                   NULL);
-	//wprintf("%8s", w_text);
-	free(w_text);
-#else
-	printf(format, text);
-#endif
-} */
 
 void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[])
 {
@@ -181,7 +154,7 @@ static void show_menu_start()
 		case 2: start_saved_wargame(); 	break;
 		case 3: print_stats(); show_war_menu();	break;
 		case 4: quit_wargame();			break;
-		default: printf("I've been hacked"); exit(EXIT_FAILURE);
+		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
@@ -207,7 +180,7 @@ static void show_menu_pause()
 		case 3: save_wargame();	show_war_menu(); 	break;
 		case 4: print_stats(); show_war_menu();		break;
 		case 5: quit_wargame();			break;
-		default: printf("I've been hacked"); exit(EXIT_FAILURE);
+		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 static void show_menu_win()
@@ -230,7 +203,7 @@ static void show_menu_win()
 		case 1: start_new_wargame(); 	break;
 		case 2: print_stats(); show_war_menu();	break;
 		case 3: quit_wargame();			break;
-		default: printf("I've been hacked"); exit(EXIT_FAILURE);
+		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
@@ -254,15 +227,15 @@ static void show_menu_lose()
 	case 1: start_new_wargame(); 	break;
 	case 2: print_stats(); show_war_menu();	break;
 	case 3: quit_wargame();			break;
-	default: printf("I've been hacked"); exit(EXIT_FAILURE);
+	default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
 void show_war_menu()
 {
-	extern enum GameState curr_state;
+	extern enum GameState war_curr_state;
 
-	switch (curr_state) {
+	switch (war_curr_state) {
 		case START: show_menu_start();	break;
 		case PAUSE: show_menu_pause(); 	break;
 		case WIN: 	show_menu_win();	break;

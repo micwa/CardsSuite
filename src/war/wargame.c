@@ -11,7 +11,7 @@ const char *WAR_STATS = "war.stats";
 const char *WAR_SAVE = "war.deck";
 static const int SHUFFLE_AMOUNT = 1000;
 
-enum GameState curr_state = START;
+enum GameState war_curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
 static int nturns = 0;						/* Turns played so far */
@@ -22,11 +22,11 @@ static void fload_stats()
 {
 	FILE *file = fopen(WAR_STATS, "r");
 	if (file == NULL) {						/* Default: set everything to 0 */
-		cpu->nwins = 1;
+		cpu->nwins = 0;
 		cpu->nlosses = 0;
 		cpu->curr_score = 0;
-		player->nwins = 2;
-		player->nlosses = 3;
+		player->nwins = 0;
+		player->nlosses = 0;
 		player->curr_score = 0;
 	} else {
 		fscanf(file, "%9d %9d %9d", &cpu->nwins, &cpu->nlosses, &cpu->curr_score);		/* Overflow protection */
@@ -54,7 +54,7 @@ static int fsave_stats()
 /* Set the current state to PAUSE and bring up the pause menu */
 static void pause_game()
 {
-	curr_state = PAUSE;
+	war_curr_state = PAUSE;
 	show_war_menu();
 }
 
@@ -66,7 +66,7 @@ static void play_game()
 	struct CardNode *temp;
     int c;
     
-    while (curr_state == START) {
+    while (war_curr_state == START) {
     	draw_war_board(player, cpu, (const struct Card **)ccur);	/* Since setting of ccur[] is after this */
 
         /* Prompt user to press enter, and skip over all input */
@@ -121,11 +121,11 @@ static void play_game()
 
         /* If somehow the player won or lost, save stats, show the appropriate menu */
         if (player->hand->ncards == 0) {
-        	curr_state = LOSE;
+        	war_curr_state = LOSE;
         	fsave_stats();
         	show_war_menu();
         } else if (player->hand->ncards == 52) {
-        	curr_state = WIN;
+        	war_curr_state = WIN;
         	fsave_stats();
         	show_war_menu();
         }
@@ -144,8 +144,8 @@ static void players_destroy()
         free(player);
     }
     if (curr_hand != NULL) {
-    	if (opened_hand) {						/* Solution for now: if no fopen_hand(), curr_hand */
-    		free_hand(&curr_hand[0], 0);		/* was malloc'd; else, is just an array */
+    	if (opened_hand) {						/* Solution for now: if fopen_hand(), curr_hand */
+    		free_hand(&curr_hand[0], 0);		/* is just an array; else, was malloc'd */
     		free_hand(&curr_hand[1], 0);
     		free(curr_hand);
     	}
@@ -157,12 +157,12 @@ static void players_destroy()
 /* Allocates memory for the players, their LinkedHands, and the first CardNode */
 static void players_init()
 {
-	cpu = malloc(sizeof(struct Player));
-	player = malloc(sizeof(struct Player));
+	cpu = malloc(sizeof(struct Player_L));
+	player = malloc(sizeof(struct Player_L));
 	cpu->hand = malloc(sizeof(struct LinkedHand));			/* For each player, its LinkedHand and its node MUST be initialized */
 	player->hand = malloc(sizeof(struct LinkedHand));		/* (Or else fill_linked_hand()/free() will crash) */
-	cpu->hand->node = malloc(sizeof(struct CardNode));
-	player->hand->node = malloc(sizeof(struct CardNode));
+	cpu->hand->node = NULL;
+	player->hand->node = NULL;
 }
 
 void quit_wargame()
@@ -175,7 +175,7 @@ void quit_wargame()
 
 void resume_wargame()
 {
-	curr_state = START;
+	war_curr_state = START;
 	play_game();							/* An alias for play_game(), essentially (at least for now) */
 }
 
@@ -219,7 +219,7 @@ void start_new_wargame()
     curr_hand = deck;
     
 	nturns = 0;
-	curr_state = START;
+	war_curr_state = START;
     play_game();
 }
 
@@ -248,7 +248,7 @@ void start_saved_wargame()
 	opened_hand = 1;
 
 	nturns = turns;
-	curr_state = START;
+	war_curr_state = START;
 	play_game();
 }
 

@@ -1,7 +1,7 @@
 #ifndef WARGAME_H_
 #define WARGAME_H_
 
-/* Quits the game; also should call hands_destroy() */
+/* Quits the game; also should call players_destroy() */
 void quit_wargame();
 
 /* Resumes the current game */

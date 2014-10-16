@@ -36,6 +36,8 @@ int card_compare(const struct Card *c1, const struct Card *c2)
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 {
 	struct CardNode *prev = l_hand->node, *curr;	/* Assumes l_hand->node exists, but is uninitialized */
+    if (prev == NULL)
+        prev = malloc(sizeof(struct CardNode));
 	prev->card = &hand->cards[0];
 
 	for (int i = 1; i < hand->ncards; i++) {

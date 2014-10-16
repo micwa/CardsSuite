@@ -11,8 +11,9 @@ int cards_played(const struct Hand *hand);
  * The ranking of suits is defined in carddefs.h */
 int card_compare(const struct Card *c1, const struct Card *c2);
 
-/* Fills the given LinkedHand (assumes its CardNode has been initialized already, and
-overwrites any cards that one currently contains) with the given Hand. */
+/* Fills the given LinkedHand with the given Hand. If CardNode is NULL, initializes it; otherwise,
+this sets the CardNode's card to the Hand's first card (note: if the card exists, this will overwrite
+it and might cause a memory leak). */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
 /* Creates an array of hands from the hand(s) stored in the FILE; the user must specify
