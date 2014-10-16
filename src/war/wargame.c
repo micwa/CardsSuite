@@ -227,7 +227,7 @@ void start_saved_wargame()
 {
 	players_destroy();
 
-	int turns;
+	int turns = 0;
 	FILE *file = fopen(WAR_SAVE, "r");
 	if (file == NULL) {
 		printf("No save file found, or error opening file.\n");
