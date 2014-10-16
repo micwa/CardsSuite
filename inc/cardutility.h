@@ -53,6 +53,9 @@ char * get_card_name(const struct Card *card);
  * If the LinkedHand's CardNode is null, makes that node the given node. */
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node);
 
+/* Returns the indexth card (starting at 0) in the LinkedHand */
+struct Card * linked_hand_get_card(struct LinkedHand *hand, int index);
+
 /* Shuffles the given hand ntimes times */
 void shuffle_hand(struct Hand *hand, int ntimes);
 

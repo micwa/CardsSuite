@@ -213,11 +213,22 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 		base = node;						/* Else, make base the given node itself */
 }
 
+struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
+{
+	if (index >= hand->ncards || index < 0)
+		return NULL;
+
+	struct CardNode *base = hand->node;
+	for (int i = 0; i < index; i++)
+		base = base->next;
+
+	return base->card;
+}
+
 void shuffle_hand(struct Hand *hand, int ntimes)
 {
 	int swap1, swap2, ncards = hand->ncards;
 	struct Card temp, *cards = hand->cards;
-	printf("NUM: %d\n", ncards);
 
 	if (!isrand_init) {
 		srand(time(NULL));

@@ -43,12 +43,12 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     	if (i != 0) {						/* Board center */
     		printf("\n");
     		if (i == 2)
-    			printf("%35s", cpu_enc);
+    			printf("%25s", cpu_enc);
     		else
-    			printf("%35s", CARD_BACK);
+    			printf("%25s", CARD_BACK);
     	}
     	else {
-    		printf("%35s", CARD_BACK);	/* Put card back closer to hand */
+    		printf("%25s", CARD_BACK);	/* Put card back closer to hand */
     		printf("\n\n");
     	}
     	if (i != 0 && cards[0] != NULL && cpu->curr_score == 1) {
@@ -61,9 +61,9 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     	printf("\n\n");
     	if (i != 0) {
     		if (i == 2)
-    			printf("%35s", pl_enc);
+    			printf("%25s", pl_enc);
     		else
-    			printf("%35s", CARD_BACK);
+    			printf("%25s", CARD_BACK);
     	}
     	if (i != 0 && cards[0] != NULL && player->curr_score == 1) {
     		enc = get_card_encoding(cards[0]);
@@ -75,7 +75,7 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     	if (i != 0)
     		printf("\n");
     	else
-    		printf("%35s", CARD_BACK);
+    		printf("%25s", CARD_BACK);
 
     	printf("\n");						/* Board bottom */
     	for (int j = 0; j < pl_todraw; j++)

@@ -18,10 +18,11 @@ enum GameState solit_curr_state = START;
 enum MoveType solit_curr_move = NONE;
 struct Hand *stock_hand = NULL;
 struct LinkedHand *tbl_hand[7] = { NULL };
-struct LinkedHand *fdtion_hand[4] = { NULL };
+struct Card *fdtion_top[4] = { NULL };   	/* No point in creating an array/otherwise for the foundation cards */
+
 /* tbl_first[i] is the index of the first card in tbl_hand[i] to be drawn face up, where [0] = card 1, etc.
  * tbl_first[i] must be in the range (0...ncards-1), unless it equals -1, in which case all cards are face down */
-int tbl_first[7];
+static int tbl_first[7];
 static struct Player *player = NULL;        /* Primarily for storing original hand; also keeps track of stats */
 static int nmoves;						    /* Moves made so far */
 static int waste_index;                     /* Index of the *current* card shown in the waste pile */
@@ -59,15 +60,12 @@ static void game_destroy()
     	free_hand(player->hand, 1);
         free(player);
     }
-    /* free(): stock_hand, tbl_hand, then LinkedHands in that order */
+    /* free() everything */
     if (stock_hand != NULL)
     	free_hand(stock_hand, 1);
     for (int i = 0; i < 7; i++)
         if (tbl_hand[i] != NULL)
             free_linked_hand(tbl_hand[i], 0);
-    for (int i = 0; i < 4; i++)
-        if (fdtion_hand[i] != NULL)
-            free_linked_hand(fdtion_hand[i], 0);
 }
 
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
@@ -89,11 +87,7 @@ static void game_init()
     for (int i = 0; i < 7; i++) {
         tbl_hand[i] = malloc(sizeof(struct LinkedHand));
         tbl_hand[i]->node = NULL;
-        tbl_first[i] = i;                           /* Positions 0 to 6 */
-    }
-    for (int i = 0; i < 4; i++) {
-        fdtion_hand[i] = malloc(sizeof(struct LinkedHand));
-        fdtion_hand[i]->node = NULL;
+        tbl_hand[i]->ncards = i + 1;
     }
 }
 
@@ -104,20 +98,27 @@ static void pause_game()
 	show_solit_menu();
 }
 
-/* Start playing the game, assuming that hands are initialized */
+/* Start playing the game, assuming that hands are initialized.
+ * Most logic checking/move making is outsourced to solitutil. */
 static void play_game()
 {
-	struct CardNode *temp;
-    int c;
+    int option;
     
     while (solit_curr_state == START) {
+    	draw_solit_board(waste_index, tbl_first, 1, 1);
 
-        /* Show menu if won */
-        if (player->hand->ncards == 0) {
-        	solit_curr_state = LOSE;
+    	/* Get input */
+    	printf("Make a move: ");
+    	scanf("%1d", &option);
+    	while (getchar() != '\n')
+    		;
+
+        /* Show menu if won
+        if (solit_game_win()) {
+        	solit_curr_state = WIN;
         	fsave_stats();
         	show_solit_menu();
-        }
+        }*/
     }
 }
 
@@ -164,10 +165,10 @@ void start_new_solitgame()
     struct Hand *deck = gen_ordered_deck();      	/* The player keeps the original hand with malloc'd hand/cards (and isplayed, but we don't use that) */
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     
-    /* Initialize game, fill up hands */
+    /* Initialize game, then fill up hands */
     game_init();
     fload_stats();
-    /* Note that this copies cards; the LinkedHand's init does not */
+    /* Note that Hand copies the cards from the deck; the LinkedHands do not */
     for (count = 0; count < NCARDS_STOCK; count++)
     	stock_hand->cards[count] = deck->cards[count];
     for (int i = 0; i < 7; i++) {
@@ -177,11 +178,12 @@ void start_new_solitgame()
     		temp->next = NULL;
     		linked_hand_add(tbl_hand[i], temp);
     	}
-    	tbl_first[i] = i;
+    	tbl_first[i] = i;                           /* Positions 0 to 6 */
     }
     player->hand = deck;
     
 	nmoves = 0;
+	waste_index = -1;
 	solit_curr_state = START;
     play_game();
 }
