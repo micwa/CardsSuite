@@ -49,7 +49,8 @@ int get_card_value(const struct Card *card);
  * in the format: [Number], [Suit]; e.g. King of spades would be King, Spade */
 char * get_card_name(const struct Card *card);
 
-/* Adds the card to the linked list by placing the given CardNode at the end */
+/* Adds the card to the linked list by placing the given CardNode at the end.
+ * If the LinkedHand's CardNode is null, makes that node the given node. */
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node);
 
 /* Shuffles the given hand ntimes times */

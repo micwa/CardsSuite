@@ -205,9 +205,12 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 {
 	struct CardNode *base = hand->node;
 
-	while (base->next != NULL)				/* Go to the end of the list (not bothering to use one-line for loop) */
-		base = base->next;
-	base->next = node;
+	if (base != NULL) {						/* First check if base is not NULL to begin with */
+		while (base->next != NULL)
+			base = base->next;
+		base->next = node;
+	} else
+		base = node;						/* Else, make base the given node itself */
 }
 
 void shuffle_hand(struct Hand *hand, int ntimes)
