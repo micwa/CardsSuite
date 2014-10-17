@@ -6,11 +6,91 @@
 #include "solitui.h"
 #include "solitgame.h"
 #include "cardutility.h"
+#include "carddefs.h"
 #include "gamedefs.h"
 
-void draw_solit_board(int *waste_index, int only_rows, int only_cols)
+#ifdef _WIN32
+#define BOARD_CLEAR system("cls");
+#else   /* Assume POSIX */
+#define BOARD_CLEAR system("clear");
+#endif
+
+static char *card_encs[52] = { NULL };
+
+void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw_cols)
 {
+	extern struct Hand *stock_hand;
+	extern struct LinkedHand *tbl_hand[7];
+	extern struct Card *fdtion_top[4];
+	char *fdtion_encs[4] = { "   ", "   ", "   ", "   " };	/* Print three spaces if no card on foundation pile */
+	int max_rows = 0;
+	BOARD_CLEAR;
+
+	/* Drawing the board:
+	 * - each row has 12 initial spaces (two for row alphabet)
+	 * - each card or placeholder spaces must be three characters wide
+	 * - there is one blank line after each tableau row */
+
+	/* Top row of cards */
+	printf("\n");
+	if (waste_index < 0) {
+		printf("%12s", " ");
+		printf("%s    ", CARD_BACK);		/* CARD_BACK followed by four spaces or by the waste card */
+	} else {
+		printf("%12s", " ");
+		printf("%s %s ", CARD_BACK, card_encs[get_card_value(&stock_hand->cards[waste_index])]);
+	}
+	for (int i = 0; i < 4; i++)
+		if (fdtion_top[i] != NULL)
+			fdtion_encs[i] = card_encs[get_card_value(fdtion_top[i])];
+	printf("%s %s %s %s \n", fdtion_encs[0], fdtion_encs[1], fdtion_encs[2], fdtion_encs[3]);
+
+	/* Column stwxyz + numbers */
+	printf("%12s", " "); printf("s  t  "); printf("%3s", " "); printf("w  x  y  z  \n\n");
+	printf("%12s", " ");
+	for (int i = 0; i < 7; i++)
+		printf("%d  ", i + 1);
+	printf("\n");
+
+	/* The rows now */
+	for (int i = 0; i < 7; i++)				/* First determine max_rows */
+		if (tbl_hand[i]->ncards > max_rows)
+			max_rows = tbl_hand[i]->ncards;
+	for (int i = 0; i < max_rows; i++) {
+		printf("%10s", " ");
+		printf("%c ", 'a' + i);				/* Alphabet */
+		for (int j = 0; j < 7; j++) {
+			if (tbl_hand[j]->ncards < i + 1)		/* Print spaces if past # of cards in pile */
+				printf("   ");
+			else {
+				if (tbl_first[j] > i)
+					printf("%s  ", CARD_BACK);
+				else {
+					int val = get_card_value(linked_hand_get_card(tbl_hand[j], i));
+					printf("%s  ", card_encs[val]);
+				}
+			}
+		}
+		printf("\n\n");
+	}
 	return;
+}
+
+void free_card_encs()
+{
+	if (card_encs[0] == NULL)				/* Technically, all card_encs should be init.'d at the same time */
+		return;
+	for (int i = 0; i < 52; i++)
+		free(card_encs[i]);
+}
+
+void init_card_encs()
+{
+	struct Hand *hand = gen_ordered_deck();	/* Do this because get_card_encoding doesn't accept ints */
+	for (int i = 0; i < 52; i++)
+		card_encs[i] = get_card_encoding(&hand->cards[i]);
+
+	free_hand(hand, 1);
 }
 
 /* "Safe" scanf() for one digit only */
@@ -25,16 +105,18 @@ static void getopt(int *option)
 static void print_stats()
 {
 	extern const char *SOLIT_STATS;
-	int wins, losses, score;
+	int wins = 0, losses = 0, score = 0;
 	FILE *file = fopen(SOLIT_STATS, "r");
 	if (file != NULL) {
 		fclose(file);
-	} else {
-		printf("No stats file found. Save the game. ")
-	}
+	} else
+		printf("No stats file found.\n");
 
 	printf("------------------------------\n\n");
 	printf("Player stats:\n\n");
+	printf("    Wins: %d\n", wins);
+	printf("    Losses: %d\n", losses);
+	printf("    Lowest number of moves: %d\n", score);
 	printf("------------------------------\n\n");
 }
 

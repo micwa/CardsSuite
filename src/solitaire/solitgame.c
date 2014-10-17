@@ -26,6 +26,7 @@ static int tbl_first[7];
 static struct Player *player = NULL;        /* Primarily for storing original hand; also keeps track of stats */
 static int nmoves;						    /* Moves made so far */
 static int waste_index;                     /* Index of the *current* card shown in the waste pile */
+static int is_encs_init = 0;
 
 static void fload_stats()
 {
@@ -66,12 +67,12 @@ static void game_destroy()
     for (int i = 0; i < 7; i++)
         if (tbl_hand[i] != NULL)
             free_linked_hand(tbl_hand[i], 0);
+    free_card_encs();
 }
 
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
  * the player is done in fload_stats()). Also allocates memory for ALL Hands/LinkedHands
- * & members (one level down; however, sets CardNodes to NULL so fill_linked_hand()
- * can initialize them). */
+ * & members (one level down). */
 static void game_init()
 {
 	player = malloc(sizeof(struct Player));
@@ -83,7 +84,7 @@ static void game_init()
     stock_hand->isplayed = malloc(NCARDS_STOCK * sizeof(int));
     memset(stock_hand->isplayed, 0, NCARDS_STOCK * sizeof(int));
     
-    /* For LinkedHands, malloc() them but leave their CardNodes NULL */
+    /* For LinkedHands, malloc() them but make the CardNode NULL */
     for (int i = 0; i < 7; i++) {
         tbl_hand[i] = malloc(sizeof(struct LinkedHand));
         tbl_hand[i]->node = NULL;
@@ -99,7 +100,7 @@ static void pause_game()
 }
 
 /* Start playing the game, assuming that hands are initialized.
- * Most logic checking/move making is outsourced to solitutil. */
+ * Most logic checking/move making is "outsourced" to solitutil. */
 static void play_game()
 {
     int option;
@@ -168,6 +169,10 @@ void start_new_solitgame()
     /* Initialize game, then fill up hands */
     game_init();
     fload_stats();
+    if (!is_encs_init) {
+    	init_card_encs();
+    	is_encs_init = 1;
+    }
     /* Note that Hand copies the cards from the deck; the LinkedHands do not */
     for (count = 0; count < NCARDS_STOCK; count++)
     	stock_hand->cards[count] = deck->cards[count];
@@ -178,7 +183,7 @@ void start_new_solitgame()
     		temp->next = NULL;
     		linked_hand_add(tbl_hand[i], temp);
     	}
-    	tbl_first[i] = i;                           /* Positions 0 to 6 */
+    	tbl_first[i] = i;                   /* Positions 0 to 6 */
     }
     player->hand = deck;
     

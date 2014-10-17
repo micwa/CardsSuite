@@ -204,13 +204,16 @@ int get_card_value(const struct Card *card)
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 {
 	struct CardNode *base = hand->node;
+	struct CardNode **pbase;
 
 	if (base != NULL) {						/* First check if base is not NULL to begin with */
 		while (base->next != NULL)
 			base = base->next;
 		base->next = node;
-	} else
-		base = node;						/* Else, make base the given node itself */
+	} else {
+		pbase = &hand->node;
+		*pbase = node;						/* Else, make base the given node itself */
+	}
 }
 
 struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
