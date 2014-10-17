@@ -1,10 +1,10 @@
+#include "wargame.h"
+#include "solitgame.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <locale.h>
-
-#include "wargame.h"
-#include "solitgame.h"
 
 #define NGAMES 2
 
@@ -36,8 +36,8 @@ int main(int argc, char *argv[])
     if (argc == 1) {						/* Prompt for game if no game specified */
         printf("No card game specified.\n");
         printf("Here is a list of included games:\n\n");
-        printf("    1: War\n\n");
-        printf("    2: Solitaire\n");
+        printf("    1: War\n");
+        printf("    2: Solitaire\n\n");
         printf("Choose a game: ");
 
         do {

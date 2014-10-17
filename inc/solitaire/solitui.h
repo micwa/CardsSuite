@@ -10,13 +10,6 @@
  */
 void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw_cols);
 
-/* Frees card_encs if they were init'd already */
-void free_card_encs();
-
-/* Retrieves all 52 card encodings and stores them in an array. This MUST be called
- * for draw_solit_board() to work. */
-void init_card_encs();
-
 /* Displays the menu (different depending on current gamestate) */
 void show_solit_menu();
 

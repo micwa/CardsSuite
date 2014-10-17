@@ -1,21 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wchar.h>
-
 #include "solitui.h"
 #include "solitgame.h"
 #include "cardutility.h"
 #include "carddefs.h"
 #include "gamedefs.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
+
 #ifdef _WIN32
 #define BOARD_CLEAR system("cls");
 #else   /* Assume POSIX */
 #define BOARD_CLEAR system("clear");
 #endif
-
-static char *card_encs[52] = { NULL };
 
 void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw_cols)
 {
@@ -74,23 +72,6 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 		printf("\n\n");
 	}
 	return;
-}
-
-void free_card_encs()
-{
-	if (card_encs[0] == NULL)				/* Technically, all card_encs should be init.'d at the same time */
-		return;
-	for (int i = 0; i < 52; i++)
-		free(card_encs[i]);
-}
-
-void init_card_encs()
-{
-	struct Hand *hand = gen_ordered_deck();	/* Do this because get_card_encoding doesn't accept ints */
-	for (int i = 0; i < 52; i++)
-		card_encs[i] = get_card_encoding(&hand->cards[i]);
-
-	free_hand(hand, 1);
 }
 
 /* "Safe" scanf() for one digit only */

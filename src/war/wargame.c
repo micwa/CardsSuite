@@ -1,15 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "wargame.h"
 #include "warui.h"
 #include "carddefs.h"
 #include "cardutility.h"
+#include "structhelper.h"
 #include "gamedefs.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define SHUFFLE_AMOUNT 1000
 
 const char *WAR_STATS = "war.stats";
 const char *WAR_SAVE = "war.deck";
-static const int SHUFFLE_AMOUNT = 1000;
 
 enum GameState war_curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
@@ -22,12 +24,8 @@ static void fload_stats()
 {
 	FILE *file = fopen(WAR_STATS, "r");
 	if (file == NULL) {						/* Default: set everything to 0 */
-		cpu->nwins = 0;
-		cpu->nlosses = 0;
-		cpu->curr_score = 0;
-		player->nwins = 0;
-		player->nlosses = 0;
-		player->curr_score = 0;
+		playerl_init(cpu, 0, 0, 0);
+		playerl_init(player, 0, 0, 0);
 	} else {
 		fscanf(file, "%9d %9d %9d", &cpu->nwins, &cpu->nlosses, &cpu->curr_score);		/* Overflow protection */
 		while (fgetc(file) != '\n')
@@ -49,6 +47,39 @@ static int fsave_stats()
 	fprintf(file, "%d %d %d\n", player->nwins, player->nlosses, player->curr_score);
 	fclose(file);
 	return 1;
+}
+
+/* Frees all malloc'd memory (players, hands, etc.) */
+static void game_destroy()
+{
+	if (cpu != NULL) {
+		free_linked_hand(cpu->hand, 0);
+		free(cpu);
+	}
+    if (player != NULL) {
+    	free_linked_hand(player->hand, 0);
+        free(player);
+    }
+    if (curr_hand != NULL) {
+    	if (opened_hand) {						/* Solution for now: if fopen_hand(), curr_hand */
+    		free_hand(&curr_hand[0], 0);		/* is just an array; else, was malloc'd */
+    		free_hand(&curr_hand[1], 0);
+    		free(curr_hand);
+    	}
+    	else
+    		free_hand(curr_hand, 1);
+    }
+}
+
+/* Sets up the players, load stats, and set up the LinkedHands */
+static void game_init()
+{
+	cpu = malloc(sizeof(struct Player_L));
+	player = malloc(sizeof(struct Player_L));
+	fload_stats();
+
+	cpu->hand = linked_hand_create();
+	player->hand = linked_hand_create();
 }
 
 /* Set the current state to PAUSE and bring up the pause menu */
@@ -132,43 +163,10 @@ static void play_game()
     }
 }
 
-/* Frees all malloc'd memory (players, hands, etc.) */
-static void players_destroy()
-{
-	if (cpu != NULL) {
-		free_linked_hand(cpu->hand, 0);
-		free(cpu);
-	}
-    if (player != NULL) {
-    	free_linked_hand(player->hand, 0);
-        free(player);
-    }
-    if (curr_hand != NULL) {
-    	if (opened_hand) {						/* Solution for now: if fopen_hand(), curr_hand */
-    		free_hand(&curr_hand[0], 0);		/* is just an array; else, was malloc'd */
-    		free_hand(&curr_hand[1], 0);
-    		free(curr_hand);
-    	}
-    	else
-    		free_hand(curr_hand, 1);
-    }
-}
-
-/* Allocates memory for the players, their LinkedHands, and the first CardNode */
-static void players_init()
-{
-	cpu = malloc(sizeof(struct Player_L));
-	player = malloc(sizeof(struct Player_L));
-	cpu->hand = malloc(sizeof(struct LinkedHand));			/* For each player, its LinkedHand and its node MUST be initialized */
-	player->hand = malloc(sizeof(struct LinkedHand));		/* (Or else fill_linked_hand()/free() will crash) */
-	cpu->hand->node = NULL;
-	player->hand->node = NULL;
-}
-
 void quit_wargame()
 {
 	printf("Thank you for playing. Bye!\n");
-    players_destroy();
+    game_destroy();
 
     exit(EXIT_SUCCESS);
 }
@@ -202,16 +200,15 @@ void save_wargame()
 void start_new_wargame()
 {
 	printf("Starting new game...\n");
-    players_destroy();						/* If quitting previous game */
+    game_destroy();							/* If quitting previous game */
     
     /* Set up LinkedHands, then play */
     struct Hand *deck = gen_ordered_deck();
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     curr_hand = split_hand(deck, 2);
 
-    /* Initialize players, load stats */
-    players_init();
-    fload_stats();
+    /* Initialize game, load stats */
+    game_init();
     fill_linked_hand(cpu->hand, &curr_hand[0]);
     fill_linked_hand(player->hand, &curr_hand[1]);
     opened_hand = 0;
@@ -225,12 +222,12 @@ void start_new_wargame()
 
 void start_saved_wargame()
 {
-	players_destroy();
+	game_destroy();
 
 	int turns = 0;
 	FILE *file = fopen(WAR_SAVE, "r");
 	if (file == NULL) {
-		printf("No save file found, or error opening file.\n");
+		printf("No save file found, or error opening file.\n\n");
 		show_war_menu();
 		return;
 	}
@@ -241,8 +238,7 @@ void start_saved_wargame()
 	curr_hand = fopen_hand(file, 2);
 	fclose(file);
 
-	players_init();
-	fload_stats();
+	game_init();
 	fill_linked_hand(cpu->hand, &curr_hand[0]);
 	fill_linked_hand(player->hand, &curr_hand[1]);
 	opened_hand = 1;

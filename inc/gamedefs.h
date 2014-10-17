@@ -1,6 +1,8 @@
 #ifndef GAMEDEFS_H_
 #define GAMEDEFS_H_
 
+#include "carddefs.h"
+
 enum GameState { START, PAUSE, WIN, LOSE };
 
 struct Player {

@@ -1,0 +1,56 @@
+#include "structhelper.h"
+#include "carddefs.h"
+#include "gamedefs.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+void free_hand(struct Hand *hand, int do_free_hand)
+{
+	free(hand->isplayed);
+	free(hand->cards);
+	if (do_free_hand)
+		free(hand);
+}
+
+void free_linked_hand(struct LinkedHand *hand, int do_freecards)
+{
+	struct CardNode *node, *prev;
+
+	node = hand->node;
+	while (node != NULL) {					/* Go through nodes, freeing current one and going on to the next */
+		if (do_freecards)
+			free(node->card);
+		prev = node;
+		node = node->next;
+		free(prev);
+	}
+	free(hand);
+}
+
+struct Hand * hand_create(int ncards)
+{
+	struct Hand *hand = malloc(sizeof(struct Hand));
+	hand->ncards = ncards;
+	hand->cards = malloc(ncards * sizeof(struct Card));
+	hand->isplayed = malloc(ncards * sizeof(struct Card));
+	memset(hand->isplayed, 0, hand->ncards * sizeof(int));
+
+	return hand;
+}
+
+struct LinkedHand * linked_hand_create()
+{
+	struct LinkedHand *hand = malloc(sizeof(struct LinkedHand));
+	hand->ncards = 0;
+	hand->node = NULL;						/* Don't malloc() a CardNode unless you're creating a valid CardNode */
+
+	return hand;
+}
+
+void playerl_init(struct Player_L *player, int wins, int losses, int curr_score)
+{
+	player->nwins = wins;
+	player->nlosses = losses;
+	player->curr_score = curr_score;
+}

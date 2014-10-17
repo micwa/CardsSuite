@@ -1,8 +1,8 @@
 #ifndef CARDUTIL_H_
 #define CARDUTIL_H_
 
-#include <stdio.h>
 #include "carddefs.h"
+#include <stdio.h>
 
 /* Returns the number of cards that have been played in the given hand  */
 int cards_played(const struct Hand *hand);
@@ -22,11 +22,8 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
  * to all 0s. (implement later) */
 struct Hand * fopen_hand(FILE *file, int nhands);
 
-/* Free the memory allocated for the Hand AND its members (cards, isplayed) */
-void free_hand(struct Hand *hand, int do_free_hand);
-
-/* Frees the memory allocated for the LinkedHand AND for all CardNodes (and for cards if specified) */
-void free_linked_hand(struct LinkedHand *hand, int do_freecards);
+/* Frees all_card_encs if they were init'd already */
+void free_card_encs();
 
 /* Save the given LinkedHand to the specified file. This function should write the whole
  * hand on one line, and append a newline character at the end. */
@@ -48,6 +45,10 @@ int get_card_value(const struct Card *card);
 /* Returns the name of the card, where 11 = jack, 12 = queen, etc.
  * in the format: [Number], [Suit]; e.g. King of spades would be King, Spade */
 char * get_card_name(const struct Card *card);
+
+/* Retrieves all 52 card encodings and stores them in an array. This MUST be called
+ * for if a game accesses card_encs for its card strings. */
+void init_card_encs();
 
 /* Adds the card to the linked list by placing the given CardNode at the end.
  * If the LinkedHand's CardNode is null, makes that node the given node. */

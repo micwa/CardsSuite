@@ -6,6 +6,8 @@ extern const char *CARD_UTF_PREFIX;
 extern const char *CARD_SUFFIXES[4];
 extern const char *CARD_BACK;
 
+extern char *card_encs[52];
+
 enum Suit { CLUB, DIAMOND, HEART, SPADE };
 
 /* A card with a number and a suit. */

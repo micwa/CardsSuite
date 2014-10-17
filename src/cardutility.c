@@ -1,15 +1,20 @@
+#include "cardutility.h"
+#include "carddefs.h"
+#include "structhelper.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 
-#include "cardutility.h"
-#include "carddefs.h"
-
 /* Define constants from carddefs.h */
 const char *CARD_UTF_PREFIX = "\xf0\x9f";
 const char *CARD_SUFFIXES[4] = { "\x83\x91", "\x83\x81", "\x82\xb1" , "\x82\xa1" };
 const char *CARD_BACK = "\xf0\x9f\x82\xa0";
+
+/* Stores all 52 card encodings for convenience; call init_card_encs() to initialize,
+ * and free_card_encs() to release the memory */
+char *card_encs[52] = { NULL };
 
 /* Private constants/variables */
 static int isrand_init = 0;
@@ -36,8 +41,12 @@ int card_compare(const struct Card *c1, const struct Card *c2)
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 {
 	struct CardNode *prev = l_hand->node, *curr;	/* Assumes l_hand->node exists, but is uninitialized */
-    if (prev == NULL)
-        prev = malloc(sizeof(struct CardNode));
+	if (prev == NULL) {
+		struct CardNode **pnode;
+    	pnode = &l_hand->node;
+        *pnode = malloc(sizeof(struct CardNode));
+        prev = *pnode;
+    }
 	prev->card = &hand->cards[0];
 
 	for (int i = 1; i < hand->ncards; i++) {
@@ -82,27 +91,12 @@ struct Hand * fopen_hand(FILE *file, int nhands)
     return hands;
 }
 
-void free_hand(struct Hand *hand, int do_free_hand)
+void free_card_encs()
 {
-	free(hand->isplayed);
-	free(hand->cards);
-	if (do_free_hand)
-		free(hand);
-}
-
-void free_linked_hand(struct LinkedHand *hand, int do_freecards)
-{
-	struct CardNode *node, *prev;
-
-	node = hand->node;
-	while (node != NULL) {					/* Go through nodes, freeing current one and going on to the next */
-		if (do_freecards)
-			free(node->card);
-		prev = node;
-		node = node->next;
-		free(prev);
-	}
-	free(hand);
+	if (card_encs[0] == NULL)				/* Technically, all card_encs should be init.'d at the same time */
+		return;
+	for (int i = 0; i < 52; i++)
+		free(card_encs[i]);
 }
 
 void fsave_linked_hand(const struct LinkedHand *hand, FILE *file)
@@ -118,20 +112,13 @@ void fsave_linked_hand(const struct LinkedHand *hand, FILE *file)
 
 struct Hand * gen_ordered_deck()
 {
-    struct Hand *hand = malloc(sizeof(struct Hand));
-    struct Card *cards = malloc(52 * sizeof(struct Card));
-    int *isplayed;
+    struct Hand *hand = hand_create(52);	/* Remember to free() this (as with all other *_create() functions) */
+    struct Card *cards = hand->cards;
 
     for (int i = 0; i < 52; i++) {			/* Populate the deck */
         cards[i].number = i % 13 + 1;
         cards[i].suit = i / 13;
     }
-    hand->ncards = 52;
-    hand->cards = cards;					/* Remember to free() this... */
-    isplayed = malloc(hand->ncards * sizeof(int));
-    memset(isplayed, 0, hand->ncards * sizeof(int));
-    hand->isplayed = isplayed;           	/* ...and this! */
-
     return hand;
 }
 
@@ -201,16 +188,26 @@ int get_card_value(const struct Card *card)
     return value;
 }
 
+
+void init_card_encs()
+{
+	struct Hand *hand = gen_ordered_deck();	/* Do this because get_card_encoding doesn't accept ints */
+	for (int i = 0; i < 52; i++)
+		card_encs[i] = get_card_encoding(&hand->cards[i]);
+
+	free_hand(hand, 1);
+}
+
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 {
 	struct CardNode *base = hand->node;
-	struct CardNode **pbase;
 
 	if (base != NULL) {						/* First check if base is not NULL to begin with */
 		while (base->next != NULL)
 			base = base->next;
 		base->next = node;
 	} else {
+		struct CardNode **pbase;
 		pbase = &hand->node;
 		*pbase = node;						/* Else, make base the given node itself */
 	}

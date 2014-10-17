@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wchar.h>
-
 #include "cardutility.h"
 #include "gamedefs.h"
 #include "warui.h"
 #include "wargame.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wchar.h>
 
 #ifdef _WIN32
 #define BOARD_CLEAR system("cls");
