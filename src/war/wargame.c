@@ -19,6 +19,7 @@ static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
 static int nturns = 0;						/* Turns played so far */
 static struct Hand *curr_hand = NULL;		/* For memory leak purposes only */
 static int opened_hand = 0;
+static int is_encs_init = 0;
 
 static void fload_stats()
 {
@@ -80,6 +81,11 @@ static void game_init()
 
 	cpu->hand = linked_hand_create();
 	player->hand = linked_hand_create();
+
+	if (!is_encs_init) {					/* Initialize card encodings */
+		init_card_encs();
+		is_encs_init = 1;
+	}
 }
 
 /* Set the current state to PAUSE and bring up the pause menu */
@@ -167,6 +173,7 @@ void quit_wargame()
 {
 	printf("Thank you for playing. Bye!\n");
     game_destroy();
+    free_card_encs();
 
     exit(EXIT_SUCCESS);
 }

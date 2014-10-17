@@ -69,7 +69,6 @@ static void game_destroy()
     for (int i = 0; i < 7; i++)
         if (tbl_hand[i] != NULL)
             free_linked_hand(tbl_hand[i], 0);
-    free_card_encs();
 }
 
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
@@ -127,6 +126,7 @@ void quit_solitgame()
 {
 	printf("Thank you for playing. Bye!\n");
     game_destroy();
+    free_card_encs();
 
     exit(EXIT_SUCCESS);
 }

@@ -20,6 +20,7 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 	extern struct Hand *stock_hand;
 	extern struct LinkedHand *tbl_hand[7];
 	extern struct Card *fdtion_top[4];
+	extern char *card_encs[52];
 	char *fdtion_encs[4] = { "   ", "   ", "   ", "   " };	/* Print three spaces if no card on foundation pile */
 	int max_rows = 0;
 	BOARD_CLEAR;

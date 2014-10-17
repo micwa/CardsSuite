@@ -19,8 +19,9 @@
 void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[])
 {
 	const int NUM_FRAMES = 3;
+	extern char *card_encs[52];
 	int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
-	char *cpu_enc, *pl_enc, *enc, *enc2;
+	char *cpu_enc, *pl_enc;
 
 	cpu_todraw = cpu->hand->ncards - 1;
 	pl_todraw = player->hand->ncards - 1;
@@ -52,11 +53,8 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     		printf("\n\n");
     	}
     	if (i != 0 && cards[0] != NULL && cpu->curr_score == 1) {
-    		enc = get_card_encoding(cards[0]);
-    		enc2 = get_card_encoding(cards[1]);
-    		printf("%25s", enc); printf("%5s", enc2);
-    		free(enc);
-    		free(enc2);
+    		printf("%25s", card_encs[get_card_value(cards[0])]);
+    		printf("%5s", card_encs[get_card_value(cards[1])]);
     	}
     	printf("\n\n");
     	if (i != 0) {
@@ -66,11 +64,8 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
     			printf("%25s", CARD_BACK);
     	}
     	if (i != 0 && cards[0] != NULL && player->curr_score == 1) {
-    		enc = get_card_encoding(cards[0]);
-    		enc2 = get_card_encoding(cards[1]);
-    		printf("%25s ", enc2); printf("%5s", enc);	/* Flip order */
-    		free(enc);
-    		free(enc2);
+    		printf("%25s", card_encs[get_card_value(cards[1])]);	/* Flip order */
+    		printf("%5s", card_encs[get_card_value(cards[0])]);
     	}
     	if (i != 0)
     		printf("\n");
