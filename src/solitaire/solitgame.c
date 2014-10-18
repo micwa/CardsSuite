@@ -15,19 +15,18 @@
 
 const char *SOLIT_STATS = "solit.stats";
 const char *SOLIT_SAVE = "solit.deck";
-
-enum GameState solit_curr_state = START;
-enum MoveType solit_curr_move = NONE;
-struct Hand *stock_hand = NULL;
-struct LinkedHand *tbl_hand[7] = { NULL };
-struct Card *fdtion_top[4] = { NULL };   	/* No point in creating an array/otherwise for the foundation cards */
+enum GameState g_solit_curr_state = START;
+struct Hand *g_stock_hand = NULL;
+struct LinkedHand *g_tbl_hand[7] = { NULL };
+struct Card *g_fdtion_top[4] = { NULL };   	/* No point in creating an array/otherwise for the foundation cards */
 
 /* tbl_first[i] is the index of the first card in tbl_hand[i] to be drawn face up, where [0] = card 1, etc.
  * tbl_first[i] must be in the range (0...ncards-1), unless it equals -1, in which case all cards are face down */
 static int tbl_first[7];
 static struct Player *player = NULL;        /* Primarily for storing original hand; also keeps track of stats */
-static int nmoves;						    /* Moves made so far */
-static int waste_index;                     /* Index of the *current* card shown in the waste pile */
+static enum MoveType solit_curr_move = NONE;
+static int nmoves = 0;						/* Moves made so far */
+static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
 static int is_encs_init = 0;
 
 static void fload_stats()
@@ -64,11 +63,11 @@ static void game_destroy()
         free(player);
     }
     /* free() everything */
-    if (stock_hand != NULL)
-    	free_hand(stock_hand, 1);
+    if (g_stock_hand != NULL)
+    	free_hand(g_stock_hand, 1);
     for (int i = 0; i < 7; i++)
-        if (tbl_hand[i] != NULL)
-            free_linked_hand(tbl_hand[i], 0);
+        if (g_tbl_hand[i] != NULL)
+            free_linked_hand(g_tbl_hand[i], 0);
 }
 
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
@@ -81,9 +80,9 @@ static void game_init()
 	fload_stats();
     
 	/* Initialize all hands; for LinkedHands, make their CardNodes NULL */
-	stock_hand = hand_create(NCARDS_STOCK);
+	g_stock_hand = hand_create(NCARDS_STOCK);
     for (int i = 0; i < 7; i++)
-    	tbl_hand[i] = linked_hand_create();
+    	g_tbl_hand[i] = linked_hand_create();
 
     if (!is_encs_init) {					/* Initialize card encodings */
     	init_card_encs();
@@ -94,7 +93,7 @@ static void game_init()
 /* Set the current state to PAUSE and bring up the pause menu */
 static void pause_game()
 {
-	solit_curr_state = PAUSE;
+	g_solit_curr_state = PAUSE;
 	show_solit_menu();
 }
 
@@ -103,8 +102,10 @@ static void pause_game()
 static void play_game()
 {
     int option;
-    
-    while (solit_curr_state == START) {
+    struct Card *card_src, *card_dest;
+    void *src, *dest;				/* src = either current waste, tbl, tbl_single */
+    										/* dest = either tbl, tbl_empty, fdtion */
+    while (g_solit_curr_state == START) {
     	draw_solit_board(waste_index, tbl_first, 1, 1);
 
     	/* Get input */
@@ -133,7 +134,7 @@ void quit_solitgame()
 
 void resume_solitgame()
 {
-	solit_curr_state = START;
+	g_solit_curr_state = START;
 	play_game();							/* An alias for play_game(), essentially (at least for now) */
 }
 
@@ -170,22 +171,22 @@ void start_new_solitgame()
     game_init();
     /* Note that Hand copies the cards from the deck; the LinkedHands do not */
     for (count = 0; count < NCARDS_STOCK; count++)
-    	stock_hand->cards[count] = deck->cards[count];
+    	g_stock_hand->cards[count] = deck->cards[count];
     for (int i = 0; i < 7; i++) {
     	for (int j = 0; j < i + 1; j++) {
     		temp = malloc(sizeof(struct CardNode));
     		temp->card = &deck->cards[count++];
     		temp->next = NULL;
-    		linked_hand_add(tbl_hand[i], temp);
+    		linked_hand_add(g_tbl_hand[i], temp);
     	}
-    	tbl_hand[i]->ncards = i + 1;
+    	g_tbl_hand[i]->ncards = i + 1;
     	tbl_first[i] = i;                   /* Positions 0 to 6 */
     }
     player->hand = deck;
     
 	nmoves = 0;
 	waste_index = -1;
-	solit_curr_state = START;
+	g_solit_curr_state = START;
     play_game();
 }
 
@@ -214,7 +215,7 @@ void start_saved_solitgame()
 	opened_hand = 1; */
 
 	nmoves = moves;
-	solit_curr_state = START;
+	g_solit_curr_state = START;
 	play_game();
 }
 

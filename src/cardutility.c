@@ -12,9 +12,7 @@ const char *CARD_UTF_PREFIX = "\xf0\x9f";
 const char *CARD_SUFFIXES[4] = { "\x83\x91", "\x83\x81", "\x82\xb1" , "\x82\xa1" };
 const char *CARD_BACK = "\xf0\x9f\x82\xa0";
 
-/* Stores all 52 card encodings for convenience; call init_card_encs() to initialize,
- * and free_card_encs() to release the memory */
-char *card_encs[52] = { NULL };
+char *g_card_encs[52] = { NULL };
 
 /* Private constants/variables */
 static int isrand_init = 0;
@@ -93,10 +91,10 @@ struct Hand * fopen_hand(FILE *file, int nhands)
 
 void free_card_encs()
 {
-	if (card_encs[0] == NULL)				/* Technically, all card_encs should be init.'d at the same time */
+	if (g_card_encs[0] == NULL)				/* Technically, all card_encs should be init.'d at the same time */
 		return;
 	for (int i = 0; i < 52; i++)
-		free(card_encs[i]);
+		free(g_card_encs[i]);
 }
 
 void fsave_linked_hand(const struct LinkedHand *hand, FILE *file)
@@ -182,7 +180,7 @@ char * get_card_name(const struct Card *card)
 int get_card_value(const struct Card *card)
 {
     int value = 0;
-    value += card->number;
+    value += card->number - 1;
     value += card->suit * 13;				/* Clubs are 0-12, Diamonds are 13-25, etc. */
 
     return value;
@@ -193,7 +191,7 @@ void init_card_encs()
 {
 	struct Hand *hand = gen_ordered_deck();	/* Do this because get_card_encoding doesn't accept ints */
 	for (int i = 0; i < 52; i++)
-		card_encs[i] = get_card_encoding(&hand->cards[i]);
+		g_card_encs[i] = get_card_encoding(&hand->cards[i]);
 
 	free_hand(hand, 1);
 }

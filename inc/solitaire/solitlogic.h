@@ -10,7 +10,7 @@ enum MoveType { WASTE_TO_TBL,
     TBL_TO_TBL_EMPTY,
     TBL_SINGLE_TO_FDTION,
     TBL_TO_FDTION,					        /* Always invalid; next two are always true */
-    FLIP_STOCK,                             /* No FLIP_TBL since solitgame will automatically flip */
+    FLIP_STOCK,
     NONE
 };
 
@@ -23,7 +23,7 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
  * tbl_hand, and fdtion_hand. Determines the correct type by looking at the MoveType. */
 void make_move(enum MoveType type, void *src, void *dest);
 
-/* Returns 1 if the game is won or not (i.e. all foundation piles are filled, -1 if not */
+/* Returns 1 if the game is won or not (i.e. all foundation piles are filled), -1 if not */
 int solit_game_win();
 
 #endif /* SOLITLLOGIC_H_ */

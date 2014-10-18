@@ -1,6 +1,11 @@
 #ifndef WARGAME_H_
 #define WARGAME_H_
 
+/* Declare global constants and variables */
+extern const char *WAR_STATS;
+extern const char *WAR_SAVE;
+extern enum GameState war_curr_state;       /* Current game state */
+
 /* Quits the game; also should call players_destroy() */
 void quit_wargame();
 

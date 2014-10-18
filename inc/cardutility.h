@@ -4,6 +4,10 @@
 #include "carddefs.h"
 #include <stdio.h>
 
+/* Stores all 52 card encodings for convenience; call init_card_encs() to initialize,
+ * and free_card_encs() to release the memory */
+extern char *g_card_encs[52];
+
 /* Returns the number of cards that have been played in the given hand  */
 int cards_played(const struct Hand *hand);
 

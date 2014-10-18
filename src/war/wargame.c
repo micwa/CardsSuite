@@ -12,8 +12,8 @@
 
 const char *WAR_STATS = "war.stats";
 const char *WAR_SAVE = "war.deck";
-
 enum GameState war_curr_state = START;
+
 static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
 static int nturns = 0;						/* Turns played so far */

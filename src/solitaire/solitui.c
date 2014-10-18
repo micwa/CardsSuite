@@ -17,18 +17,18 @@
 
 void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw_cols)
 {
-	extern struct Hand *stock_hand;
-	extern struct LinkedHand *tbl_hand[7];
-	extern struct Card *fdtion_top[4];
-	extern char *card_encs[52];
+	extern struct Hand *g_stock_hand;
+	extern struct LinkedHand *g_tbl_hand[7];
+	extern struct Card *g_fdtion_top[4];
+	extern char *g_card_encs[52];
 	char *fdtion_encs[4] = { "   ", "   ", "   ", "   " };	/* Print three spaces if no card on foundation pile */
 	int max_rows = 0;
-	BOARD_CLEAR;
 
 	/* Drawing the board:
 	 * - each row has 12 initial spaces (two for row alphabet)
 	 * - each card or placeholder spaces must be three characters wide
 	 * - there is one blank line after each tableau row */
+	BOARD_CLEAR;
 
 	/* Top row of cards */
 	printf("\n");
@@ -37,36 +37,42 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 		printf("%s    ", CARD_BACK);		/* CARD_BACK followed by four spaces or by the waste card */
 	} else {
 		printf("%12s", " ");
-		printf("%s %s ", CARD_BACK, card_encs[get_card_value(&stock_hand->cards[waste_index])]);
+		printf("%s %s ", CARD_BACK, g_card_encs[get_card_value(&g_stock_hand->cards[waste_index])]);
 	}
 	for (int i = 0; i < 4; i++)
-		if (fdtion_top[i] != NULL)
-			fdtion_encs[i] = card_encs[get_card_value(fdtion_top[i])];
+		if (g_fdtion_top[i] != NULL)
+			fdtion_encs[i] = g_card_encs[get_card_value(g_fdtion_top[i])];
 	printf("%s %s %s %s \n", fdtion_encs[0], fdtion_encs[1], fdtion_encs[2], fdtion_encs[3]);
 
-	/* Column stwxyz + numbers */
+	/* Topmost column, and column numbers */
 	printf("%12s", " "); printf("s  t  "); printf("%3s", " "); printf("w  x  y  z  \n\n");
-	printf("%12s", " ");
-	for (int i = 0; i < 7; i++)
-		printf("%d  ", i + 1);
-	printf("\n");
+	if (draw_cols) {
+		printf("%12s", " ");
+		for (int i = 0; i < 7; i++)
+			printf("%d  ", i + 1);
+		printf("\n");
+	}
 
 	/* The rows now */
 	for (int i = 0; i < 7; i++)				/* First determine max_rows */
-		if (tbl_hand[i]->ncards > max_rows)
-			max_rows = tbl_hand[i]->ncards;
+		if (g_tbl_hand[i]->ncards > max_rows)
+			max_rows = g_tbl_hand[i]->ncards;
 	for (int i = 0; i < max_rows; i++) {
-		printf("%10s", " ");
-		printf("%c ", 'a' + i);				/* Alphabet */
+		if (draw_rows) {
+			printf("%10s", " ");
+			printf("%c ", 'a' + i);				/* Alphabet */
+		} else
+			printf("%12s", " ");
+
 		for (int j = 0; j < 7; j++) {
-			if (tbl_hand[j]->ncards < i + 1)		/* Print spaces if past # of cards in pile */
+			if (g_tbl_hand[j]->ncards < i + 1)		/* Print spaces if past # of cards in pile */
 				printf("   ");
 			else {
 				if (tbl_first[j] > i)
 					printf("%s  ", CARD_BACK);
 				else {
-					int val = get_card_value(linked_hand_get_card(tbl_hand[j], i));
-					printf("%s  ", card_encs[val]);
+					int val = get_card_value(linked_hand_get_card(g_tbl_hand[j], i));
+					printf("%s  ", g_card_encs[val]);
 				}
 			}
 		}
@@ -177,9 +183,9 @@ static void show_menu_win()
 
 void show_solit_menu()
 {
-	extern enum GameState solit_curr_state;
+	extern enum GameState g_solit_curr_state;
 
-	switch (solit_curr_state) {
+	switch (g_solit_curr_state) {
 		case START: show_menu_start();	break;
 		case PAUSE: show_menu_pause(); 	break;
 		case WIN: 	show_menu_win();	break;
