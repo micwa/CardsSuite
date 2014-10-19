@@ -24,7 +24,6 @@ struct Card *g_fdtion_top[4] = { NULL };   	/* No point in creating an array/oth
  * tbl_first[i] must be in the range (0...ncards-1), unless it equals -1, in which case all cards are face down */
 static int tbl_first[7];
 static struct Player *player = NULL;        /* Primarily for storing original hand; also keeps track of stats */
-static enum MoveType solit_curr_move = NONE;
 static int nmoves = 0;						/* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
 static int is_encs_init = 0;
@@ -83,11 +82,20 @@ static void game_init()
 	g_stock_hand = hand_create(NCARDS_STOCK);
     for (int i = 0; i < 7; i++)
     	g_tbl_hand[i] = linked_hand_create();
+    for (int i = 0; i < 4; i++)
+    	g_fdtion_top[i] = NULL;
 
     if (!is_encs_init) {					/* Initialize card encodings */
     	init_card_encs();
     	is_encs_init = 1;
     }
+}
+
+static void getopt(char *option)
+{
+	scanf("%1c", option);
+	while (getchar() != '\n')
+		;
 }
 
 /* Set the current state to PAUSE and bring up the pause menu */
@@ -101,25 +109,142 @@ static void pause_game()
  * Most logic checking/move making is "outsourced" to solitutil. */
 static void play_game()
 {
-    int option;
-    struct Card *card_src, *card_dest;
-    void *src, *dest;				/* src = either current waste, tableau hand, or tableau node */
+    char option;
+    int max_rows = 0, error_flag = 0, stock_empty_flag = 0;
+    int col, col2;							/* For tracking columns */
+    enum MoveType curr_move = NONE;
+    struct Card *card_src = NULL, *card_dest = NULL;
+    void *src = NULL, *dest = NULL;	        /* src = either current waste, tableau hand, or tableau node */
     										/* dest = either tbl, tbl_empty, fdtion */
     while (g_solit_curr_state == START) {
     	draw_solit_board(waste_index, tbl_first, 1, 1);
 
     	/* Get input */
-    	printf("Make a move: ");
-    	scanf("%1d", &option);
-    	while (getchar() != '\n')
-    		;
+        if (error_flag) {
+            printf("Not a valid move. Try again.\n");
+            error_flag = 0;
+        }
+        if (stock_empty_flag)
+            printf("There are no more cards in the stock.\n");
+        printf("\n---MOVE %d---\n", nmoves);
+    	printf("Make a move (p for pause): ");
+    	getopt(&option);
+          
+        for (int i = 0; i < 7; i++)         /* Find max rows */
+            if (g_tbl_hand[i]->ncards > max_rows)
+                max_rows = g_tbl_hand[i]->ncards;
+         
+        if (option == 'p') {
+            curr_move = NONE;
+            pause_game();
+        } else if (option == 's' && !stock_empty_flag) {
+            curr_move = FLIP_STOCK;
+            waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);		/* Get the next unplayed index, and show that card next */
 
-        /* Show menu if won
-        if (solit_game_win(fdtion_top)) {
-        	solit_curr_state = WIN;
+            if (waste_index == -1 && nmoves > 0)    /* Set stock_empty flag if waste_index is -1, and more than one move's been made */
+                stock_empty_flag = 1;
+        } else if (option == 't') {
+            /* First, check if the waste_index is valid. Then possibles moves from here are:
+             * move to tableau, tableau_empty, or a foundation pile */
+            if (waste_index == -1)
+                goto error;
+            draw_solit_board(waste_index, tbl_first, 0, 1);
+            printf("Select a column or foundation pile: ");
+            getopt(&option);
+
+            if (option >= '1' && option <= '7') {
+            	if (g_tbl_hand[option - '1']->ncards == 0)	/* If the tableau pile is empty */
+            		curr_move = WASTE_TO_TBL_EMPTY;
+            	else
+            		curr_move = WASTE_TO_TBL;
+            	col = option - '1';
+            	card_src = &g_stock_hand->cards[waste_index];
+            	card_dest = linked_hand_get_card(g_tbl_hand[option - '1'],	/* May be NULL */
+            			g_tbl_hand[col]->ncards - 1);
+            	src = (void *) card_src;
+            	dest = (void *) g_tbl_hand[col];
+            } else if (option >= 'w' && option <= 'z') {
+            	col = option - 'w';
+            	curr_move = WASTE_TO_FDTION;
+            	card_src = &g_stock_hand->cards[waste_index];
+            	card_dest = g_fdtion_top[col];
+            	src = (void *) card_src;
+            	dest = (void *) &g_fdtion_top[col];
+            } else
+            	goto error;
+        } else if (option >= '1' && option <= '7') {
+            /* To move a single card, select a column (1-7) or a foundation pile (w, x, y, z).
+             * To move many cards, select a row AND THEN a column */
+            col = option - '1';
+            draw_solit_board(waste_index, tbl_first, 0, 1);
+            printf("Select a column, foundation pile, or row: ");
+            getopt(&option);
+            
+            if (option >= '1' && option <= '7') {
+                col2 = option - '1';
+                curr_move = TBL_TO_TBL;
+                card_src = linked_hand_get_card(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1);
+                card_dest = linked_hand_get_card(g_tbl_hand[col2], g_tbl_hand[col2]->ncards - 1);
+                src = (void *) card_src;
+                dest = (void *) g_tbl_hand[col2];
+                
+                /* Make the move, and remove last CardNode from the src hand */
+                if (is_valid_move(curr_move, card_src, card_dest) == 1) {
+                    make_move(curr_move, src, dest);
+                    linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 0);
+                } else
+                    goto error;
+            } else if (option >= 'w' && option <= 'z') {
+                curr_move = TBL_SINGLE_TO_FDTION;
+                card_src = linked_hand_get_card(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1);
+                card_dest = g_fdtion_top[option - 'w'];
+                src = (void *) card_src;
+                dest = (void *) &g_fdtion_top[option - 'w'];
+            } else
+            	goto error;
+        } else {
+error:
+            error_flag = 1;
+            continue;
+        }
+
+        /* Now making the move, and removing/modifying indices */
+        if (is_valid_move(curr_move, card_src, card_dest) == 1) {
+        	make_move(curr_move, src, dest);
+
+        	switch (curr_move) {
+        		case WASTE_TO_TBL_EMPTY:
+        			tbl_first[col] = 0;	/* Since the pile now has one card */
+        		case WASTE_TO_TBL:
+        		case WASTE_TO_FDTION:
+        			g_stock_hand->isplayed[waste_index] = 1;
+        			waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);
+        			break;
+        		case TBL_TO_TBL_EMPTY:
+        		case TBL_TO_TBL:
+        		case TBL_SINGLE_TO_FDTION:
+        			linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 0);
+        			if (g_tbl_hand[col]->ncards <= tbl_first[col])
+        				tbl_first[col]--;			/* If that was the only face up card, decrement tbl_first[i] */
+        			break;
+        		case FLIP_STOCK:					/* Don't need to do anything */
+        		case NONE:
+        			break;
+        		case TBL_TO_FDTION:
+        		default:
+        			printf("Not even possible.\n");
+        			exit(EXIT_FAILURE);
+        	}
+        } else
+        	goto error;
+        nmoves++;
+        
+        /* On win game */
+        if (solit_game_win(g_fdtion_top)) {
+        	g_solit_curr_state = WIN;
         	fsave_stats();
         	show_solit_menu();
-        }*/
+        }
     }
 }
 
@@ -168,14 +293,14 @@ void start_new_solitgame()
     
     /* Initialize game, then fill up hands */
     game_init();
-    /* Note that Hand copies the cards from the deck; the LinkedHands do not */
-    for (count = 0; count < NCARDS_STOCK; count++)
+
+    for (count = 0; count < NCARDS_STOCK; count++)	/* Note that Hand copies the cards from the deck; the LinkedHands do not */
     	g_stock_hand->cards[count] = deck->cards[count];
     for (int i = 0; i < 7; i++) {
     	for (int j = 0; j < i + 1; j++)
     		linked_hand_add(g_tbl_hand[i], card_node_create(&deck->cards[count++], NULL));
 
-    	g_tbl_hand[i]->ncards = i + 1;
+    	/* Don't need to set g_tbl_hand[i]->ncards since add()ing it sets it already */
     	tbl_first[i] = i;                   /* Positions 0 to 6 */
     }
     player->hand = deck;

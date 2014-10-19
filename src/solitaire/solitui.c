@@ -21,7 +21,7 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 	extern struct LinkedHand *g_tbl_hand[7];
 	extern struct Card *g_fdtion_top[4];
 	extern char *g_card_encs[52];
-	char *fdtion_encs[4] = { "   ", "   ", "   ", "   " };	/* Print three spaces if no card on foundation pile */
+	char *fdtion_encs[4] = { " ", " ", " ", " " };	/* Print spaces if no card on foundation pile */
 	int max_rows = 0;
 
 	/* Drawing the board:
@@ -34,15 +34,16 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 	printf("\n");
 	if (waste_index < 0) {
 		printf("%12s", " ");
-		printf("%s    ", CARD_BACK);		/* CARD_BACK followed by four spaces or by the waste card */
+		printf("%s     ", CARD_BACK);		/* CARD_BACK followed by four spaces or by the waste card */
 	} else {
 		printf("%12s", " ");
-		printf("%s %s ", CARD_BACK, g_card_encs[get_card_value(&g_stock_hand->cards[waste_index])]);
+		printf("%s  %s  ", CARD_BACK, g_card_encs[get_card_value(&g_stock_hand->cards[waste_index])]);
 	}
 	for (int i = 0; i < 4; i++)
 		if (g_fdtion_top[i] != NULL)
 			fdtion_encs[i] = g_card_encs[get_card_value(g_fdtion_top[i])];
-	printf("%s %s %s %s \n", fdtion_encs[0], fdtion_encs[1], fdtion_encs[2], fdtion_encs[3]);
+	printf("%3s", " ");
+	printf("%s  %s  %s  %s  \n", fdtion_encs[0], fdtion_encs[1], fdtion_encs[2], fdtion_encs[3]);
 
 	/* Topmost column, and column numbers */
 	printf("%12s", " "); printf("s  t  "); printf("%3s", " "); printf("w  x  y  z  \n\n");
@@ -70,6 +71,8 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 			else {
 				if (tbl_first[j] > i)
 					printf("%s  ", CARD_BACK);
+				else if (tbl_first[j] == -1)
+					printf("%3s", " ");
 				else {
 					int val = get_card_value(linked_hand_get_card(g_tbl_hand[j], i));
 					printf("%s  ", g_card_encs[val]);
@@ -162,7 +165,7 @@ static void show_menu_win()
 {
 	int option = 0;
 
-	printf("\nCONGRATULATIONS on winning! ");
+	printf("\nCONGRATULATIONS on winning!");
 	printf("\n\nPlay again?\n\n");
 	printf("    1. Start a new game\n");
 	printf("    2. Show statistics\n");

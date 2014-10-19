@@ -23,7 +23,7 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
  * tbl_hand, and fdtion_hand. Makes the move regardless of whether it is a valid solitaire
  * move, and does ONLY that (i.e. does not remove nodes).
  * It determines the correct type by looking at the MoveType. For foundation cards, pass in
- * a pointer to a Card (not a pointer to a pointer to a Card).
+ * a pointer to a pointer to a Card.
  * Returns 1 if the move is successful, -1 if not successful, 0 if invalid argument(s). */
 int make_move(enum MoveType type, void *src, void *dest);
 
