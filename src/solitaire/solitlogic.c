@@ -86,8 +86,11 @@ int make_move(enum MoveType type, void *src, void *dest)
 int solit_game_win(struct Card *fdtion[4])
 {
 	for (int i = 0; i < 4; i++)
-		if (fdtion[i]->number != 13)
-			return -1;
+		if (fdtion[i] != NULL) {
+			if (fdtion[i]->number != 13)
+				return 0;
+		} else
+			return 0;
 
 	return 1;
 }

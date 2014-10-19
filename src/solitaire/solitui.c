@@ -60,7 +60,7 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 	for (int i = 0; i < max_rows; i++) {
 		if (draw_rows) {
 			printf("%10s", " ");
-			printf("%c ", 'a' + i);				/* Alphabet */
+			printf("%c ", 'a' + i);	        /* Alphabet */
 		} else
 			printf("%12s", " ");
 
@@ -163,10 +163,10 @@ static void show_menu_win()
 	int option = 0;
 
 	printf("\nCONGRATULATIONS on winning! ");
-	printf("\n\nPlay again?\n");
+	printf("\n\nPlay again?\n\n");
 	printf("    1. Start a new game\n");
 	printf("    2. Show statistics\n");
-	printf("    3. Quit\n");
+	printf("    3. Quit\n\n");
 
 	do {
 		printf("Choose an option: ");

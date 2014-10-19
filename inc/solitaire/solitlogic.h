@@ -27,7 +27,7 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
  * Returns 1 if the move is successful, -1 if not successful, 0 if invalid argument(s). */
 int make_move(enum MoveType type, void *src, void *dest);
 
-/* Returns 1 if the game is won or not (i.e. all foundation piles are filled), -1 if not */
+/* Returns 1 if the game is won (i.e. all foundation piles are filled), 0 if not */
 int solit_game_win(struct Card *fdtion[4]);
 
 #endif /* SOLITLLOGIC_H_ */

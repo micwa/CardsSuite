@@ -40,10 +40,8 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 {
 	struct CardNode *prev = l_hand->node, *curr;	/* If l_hand->node exists, overwrites it */
 	if (prev == NULL) {
-		struct CardNode **pnode;
-    	pnode = &l_hand->node;
-        *pnode = card_node_create(&hand->cards[0], NULL);
-        prev = *pnode;
+    	l_hand->node = card_node_create(&hand->cards[0], NULL);
+        prev = l_hand->node;
     }
 	prev->card = &hand->cards[0];
 
@@ -184,6 +182,21 @@ int get_card_value(const struct Card *card)
     return value;
 }
 
+int get_next_unplayed(struct Hand *hand, int index, int do_loop)
+{
+	if (index < 0)							/* Set to 0 for invalid indices */
+		index++;
+
+	for (int i = index; i < hand->ncards; i++)
+		if (hand->isplayed[i] == 0)
+			return i;
+
+	if (do_loop)							/* Looping from 0 to index - 1 */
+		for (int i = 0; i < index; i++)
+			if (hand->isplayed[i] == 0)
+				return i;
+	return -1;
+}
 
 void init_card_encs()
 {
@@ -202,11 +215,10 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 		while (base->next != NULL)
 			base = base->next;
 		base->next = node;
-	} else {
-		struct CardNode **pbase;
-		pbase = &hand->node;
-		*pbase = node;						/* If is NULL, make base the given node itself */
-	}
+	} else
+		hand->node = node;					/* If is NULL, make base the given node itself */
+
+	hand->ncards++;
 }
 
 struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
@@ -219,6 +231,37 @@ struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
 		base = base->next;
 
 	return base->card;
+}
+
+struct CardNode * linked_hand_remove(struct LinkedHand *hand, int index, int remove_all)
+{
+	if (index == 0) {						/* Must change the value of the head pointer itself */
+		struct CardNode *ret = hand->node;
+
+		if (remove_all) {
+			hand->node = NULL;
+			hand->ncards = 0;
+		} else {
+			hand->node = hand->node->next;
+			hand->ncards--;
+		}
+		return ret;
+	} else {
+		struct CardNode *prev, *curr = hand->node;
+
+		for (int i = 0; i < index; i++) {
+			prev = curr;
+			curr = curr->next;
+		}
+		if (remove_all) {
+			prev->next = NULL;
+			hand->ncards = index;
+		} else {
+			prev->next = curr->next;			/* Assume that the end node is always NULL, so don't need to check for ncards - 1 case */
+			hand->ncards--;
+		}
+		return curr;
+	}
 }
 
 void shuffle_hand(struct Hand *hand, int ntimes)

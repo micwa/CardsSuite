@@ -128,32 +128,24 @@ static void play_game()
 
         	/* Unlink node from losing player, add it to winning player,
         	 * flip cards for both players. Don't create a cycle! */
-        	temp = player->hand->node;
-        	player->hand->node = player->hand->node->next;	/* Do this before the next line, or the node loses its "next" pointer */
-        	temp->next = NULL;
+        	temp = linked_hand_remove(player->hand, 0, 0);
+        	temp->next = NULL;				/* Set next to NULL before adding to cpu's hand */
         	linked_hand_add(cpu->hand, temp);
 
-        	temp = cpu->hand->node;
-        	cpu->hand->node = cpu->hand->node->next;
+        	temp = linked_hand_remove(cpu->hand, 0, 0);
         	temp->next = NULL;
         	linked_hand_add(cpu->hand, temp);
-        	cpu->hand->ncards += 1;
-        	player->hand->ncards -= 1;
         } else {
         	cpu->curr_score = 0;
         	player->curr_score = 1;
 
-        	temp = cpu->hand->node;
-        	cpu->hand->node = cpu->hand->node->next;
+        	temp = linked_hand_remove(cpu->hand, 0, 0);
         	temp->next = NULL;
         	linked_hand_add(player->hand, temp);
 
-        	temp = player->hand->node;
-        	player->hand->node = player->hand->node->next;
+        	temp = linked_hand_remove(player->hand, 0, 0);
         	temp->next = NULL;
         	linked_hand_add(player->hand, temp);
-        	player->hand->ncards += 1;
-        	cpu->hand->ncards -= 1;
         }
 
         /* If somehow the player won or lost, save stats, show the appropriate menu */

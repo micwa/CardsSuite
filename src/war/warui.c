@@ -208,10 +208,10 @@ static void show_menu_lose()
 
 	printf("\nCONGRATULATIONS on somehow losing! ");
 	printf("I don't know why you did it, but you beat the odds and lost!");
-	printf("\n\nPlay again?\n");
+	printf("\n\nPlay again?\n\n");
 	printf("    1. Start a new game\n");
 	printf("    2. Show statistics\n");
-	printf("    3. Quit\n");
+	printf("    3. Quit\n\n");
 
 	do {
 		printf("Choose an option: ");

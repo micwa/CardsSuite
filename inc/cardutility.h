@@ -50,16 +50,28 @@ int get_card_value(const struct Card *card);
  * in the format: [Number], [Suit]; e.g. King of spades would be King, Spade */
 char * get_card_name(const struct Card *card);
 
+/* Returns the index of the next unplayed card starting at the specified index (includes that index).
+ * If do_loop is non-zero, will loop around to 0 to index - 1 if no unplayed cards are found.
+ * If there are no unplayed cards, returns -1. */
+int get_next_unplayed(struct Hand *hand, int index, int do_loop);
+
 /* Retrieves all 52 card encodings and stores them in an array. This MUST be called
  * for if a game accesses card_encs for its card strings. */
 void init_card_encs();
 
-/* Adds the card to the linked list by placing the given CardNode at the end.
- * If the LinkedHand's CardNode is null, makes that node the given node. */
+/* Adds the given CardNode at the end of the LinkedHand, and increments ncards
+ * by 1. If the LinkedHand's CardNode is null, makes that node the given node. */
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node);
 
 /* Returns the indexth card (starting at 0) in the LinkedHand */
 struct Card * linked_hand_get_card(struct LinkedHand *hand, int index);
+
+/* Removes the CardNode at the specified index from the LinkedHand, and decrements
+ * ncards by 1. Returns the removed CardNode (unmodified).
+ * If remove_all is 0, the CardNode at index - 1 (if index != 0) will have
+ * its "next" pointer the CardNode at index + 1 (NULL if removing last node).
+ * Otherwise, the CardNode at index - 1 will have "next" always point to NULL. */
+struct CardNode * linked_hand_remove(struct LinkedHand *hand, int index, int remove_all);
 
 /* Shuffles the given hand ntimes times */
 void shuffle_hand(struct Hand *hand, int ntimes);
