@@ -4,6 +4,10 @@
 #include "carddefs.h"
 #include "gamedefs.h"
 
+/* Creates a CardNode containing the given card and "next" set to the given node.
+ * ALWAYS use this instead of malloc()ing to ensure next is initialized to NULL, or a non-garbage value. */
+struct CardNode * card_node_create(struct Card *card, struct CardNode *node);
+
 /* Free the memory allocated for the Hand AND its members (cards, isplayed) */
 void free_hand(struct Hand *hand, int do_free_hand);
 

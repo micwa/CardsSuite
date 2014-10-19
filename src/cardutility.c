@@ -38,20 +38,18 @@ int card_compare(const struct Card *c1, const struct Card *c2)
 
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 {
-	struct CardNode *prev = l_hand->node, *curr;	/* Assumes l_hand->node exists, but is uninitialized */
+	struct CardNode *prev = l_hand->node, *curr;	/* If l_hand->node exists, overwrites it */
 	if (prev == NULL) {
 		struct CardNode **pnode;
     	pnode = &l_hand->node;
-        *pnode = malloc(sizeof(struct CardNode));
+        *pnode = card_node_create(&hand->cards[0], NULL);
         prev = *pnode;
     }
 	prev->card = &hand->cards[0];
 
 	for (int i = 1; i < hand->ncards; i++) {
-		curr = malloc(sizeof(struct CardNode));
-		curr->card = &hand->cards[i];		/* Set card in new node; does NOT allocate new memory for Card */
+		curr = card_node_create(&hand->cards[i], NULL);
 		prev->next = curr;
-		curr->next = NULL;					/* Next MUST be set to NULL for free() to work */
 		prev = curr;
 	}
 	l_hand->ncards = hand->ncards;
@@ -207,7 +205,7 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 	} else {
 		struct CardNode **pbase;
 		pbase = &hand->node;
-		*pbase = node;						/* Else, make base the given node itself */
+		*pbase = node;						/* If is NULL, make base the given node itself */
 	}
 }
 

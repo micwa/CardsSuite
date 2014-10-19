@@ -103,7 +103,7 @@ static void play_game()
 {
     int option;
     struct Card *card_src, *card_dest;
-    void *src, *dest;				/* src = either current waste, tbl, tbl_single */
+    void *src, *dest;				/* src = either current waste, tableau hand, or tableau node */
     										/* dest = either tbl, tbl_empty, fdtion */
     while (g_solit_curr_state == START) {
     	draw_solit_board(waste_index, tbl_first, 1, 1);
@@ -115,7 +115,7 @@ static void play_game()
     		;
 
         /* Show menu if won
-        if (solit_game_win()) {
+        if (solit_game_win(fdtion_top)) {
         	solit_curr_state = WIN;
         	fsave_stats();
         	show_solit_menu();
@@ -162,7 +162,6 @@ void start_new_solitgame()
 	printf("Starting new game...\n");
     game_destroy();
     
-    struct CardNode *temp;
     int count = 0;							/* For counting the index of the generated deck */
     struct Hand *deck = gen_ordered_deck();      	/* The player keeps the original hand with malloc'd hand/cards (and isplayed, but we don't use that) */
     shuffle_hand(deck, SHUFFLE_AMOUNT);
@@ -173,12 +172,9 @@ void start_new_solitgame()
     for (count = 0; count < NCARDS_STOCK; count++)
     	g_stock_hand->cards[count] = deck->cards[count];
     for (int i = 0; i < 7; i++) {
-    	for (int j = 0; j < i + 1; j++) {
-    		temp = malloc(sizeof(struct CardNode));
-    		temp->card = &deck->cards[count++];
-    		temp->next = NULL;
-    		linked_hand_add(g_tbl_hand[i], temp);
-    	}
+    	for (int j = 0; j < i + 1; j++)
+    		linked_hand_add(g_tbl_hand[i], card_node_create(&deck->cards[count++], NULL));
+
     	g_tbl_hand[i]->ncards = i + 1;
     	tbl_first[i] = i;                   /* Positions 0 to 6 */
     }

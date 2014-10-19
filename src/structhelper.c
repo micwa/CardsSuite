@@ -5,6 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct CardNode * card_node_create(struct Card *card, struct CardNode *next)
+{
+	struct CardNode *node = malloc(sizeof(struct CardNode));
+	node->card = card;						/* Set card in new node; does NOT allocate new memory for Card */
+	node->next = next;
+
+	return node;
+}
+
 void free_hand(struct Hand *hand, int do_free_hand)
 {
 	free(hand->isplayed);
