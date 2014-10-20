@@ -16,7 +16,7 @@ only terminals supporting UTF-8 by default are supported. Sorry Windows users!
 
 ### Included Games
 
-##### War
+#### War
 
 This is the classic game of war. The deck is split in two so that you receive
 half the deck and the opponent the other half. Each turn, the top card of the
@@ -26,8 +26,8 @@ runs out of cards.
 
 Controls:
 
-* Press <Enter> to play the next card
-* Press 'p' to pause
+* Press `<Enter>` to play the next card
+* Press `p` to pause
 
 ##### Solitaire
 
@@ -39,20 +39,20 @@ Klondike/solitaire can be found [here]
 
 Controls (type the character followed by <Enter>; [x-y] specifies a range):
 
-* s - flip the stock
-* t - move a card from the waste to a column or foundation pile (will prompt)
-    * 1-7 - move from waste to a column
-    * w, x, y, z - move from waste to the specified foundation pile
-* [1-7] - move a card from a tableau pile to another column or a foundation pile
-(will prompt)
-    * [1-7] - move the LAST card from the selected tableau pile to the second
-    * [a-s] - move MULTIPLE cards starting at the selected row to another column
-    (will prompt for another column)
-    * w, x, y, z - move the last card from the selected tableau pile to the
-    specified foundation pile
-* Press 'P' to pause (note capital 'P')
+* `s` - flip the stock
+* `t` - move a card from the waste to a column or foundation pile (will prompt)
+    * `[1-7]` - move from waste to a column
+    * `w`, `x`, `y`, `z` - move from waste to the specified foundation pile
+* `[1-7]` - move a card from a tableau pile to another column or a foundation
+pile (will prompt)
+    * `[1-7]` - move the LAST card from the selected tableau pile to the second
+    * `[a-s]` - move MULTIPLE cards starting at the selected row to another
+    column (will prompt for another column)
+    * `w`, `x`, `y`, `z` - move the last card from the selected tableau pile to
+    the specified foundation pile
+* Press `P` to pause (note capital 'P')
 
-#### Building from source
+### Building from source
 
 This project does not contain any executables, so you will have to build from
 source. This requires [gcc] (https://gcc.gnu.org/) or another C compiler, and
