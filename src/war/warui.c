@@ -16,7 +16,7 @@
 #define SYS_PAUSE system("sleep 0.1");
 #endif
 
-void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[])
+void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[2])
 {
 	const int NUM_FRAMES = 3;
 	extern char *g_card_encs[52];

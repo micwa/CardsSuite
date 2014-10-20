@@ -70,6 +70,8 @@ static void game_destroy()
     	else
     		free_hand(curr_hand, 1);
     }
+    ccur[0] = NULL;
+    ccur[1] = NULL;
 }
 
 /* Sets up the players, load stats, and set up the LinkedHands */
@@ -180,7 +182,7 @@ void save_wargame()
 {
 	FILE *file = fopen(WAR_SAVE, "w");
 	if (file == NULL) {
-		printf("Error writing save file: returning\n");
+		printf("Error opening save file for write: returning\n");
 		return;
 	}
 	/* Save the turn number */
