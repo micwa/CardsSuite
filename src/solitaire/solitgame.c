@@ -219,7 +219,7 @@ error:
             continue;
         }
 
-        /* Now making the move, and removing/modifying indices */
+        /* Now making the move, and removing nodes, etc. */
         if (is_valid_move(curr_move, card_src, card_dest) == 1) {
         	make_move(curr_move, src, dest);
 
@@ -231,7 +231,7 @@ error:
         			g_stock_hand->isplayed[waste_index] = 1;
         			waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);
         			break;
-        		case TBL_TO_TBL_EMPTY:		/* Don't need to remove nodes since removed already */
+        		case TBL_TO_TBL_EMPTY:
         			tbl_first[col2] = 0;
         		case TBL_TO_TBL:
         		case TBL_SINGLE_TO_FDTION:
@@ -274,7 +274,7 @@ void quit_solitgame()
 void resume_solitgame()
 {
 	g_solit_curr_state = START;
-	play_game();							/* An alias for play_game(), essentially (at least for now) */
+	play_game();
 }
 
 void save_solitgame()
@@ -301,7 +301,7 @@ void start_new_solitgame()
 	printf("Starting new game...\n");
     game_destroy();
     
-    int count = 0;							/* For counting the index of the generated deck */
+    int count = 0;							        /* For counting the index of the generated deck */
     struct Hand *deck = gen_ordered_deck();      	/* The player keeps the original hand with malloc'd hand/cards (and isplayed, but we don't use that) */
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     
@@ -315,7 +315,7 @@ void start_new_solitgame()
     		linked_hand_add(g_tbl_hand[i], card_node_create(&deck->cards[count++], NULL));
 
     	/* Don't need to set g_tbl_hand[i]->ncards since add()ing it sets it already */
-    	tbl_first[i] = i;                   /* Positions 0 to 6 */
+    	tbl_first[i] = i;
     }
     player->hand = deck;
     

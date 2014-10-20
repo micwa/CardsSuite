@@ -67,7 +67,7 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 
 		for (int j = 0; j < 7; j++) {
 			if (g_tbl_hand[j]->ncards < i + 1)		/* Print spaces if past # of cards in pile */
-				printf("   ");
+				printf("%3s", " ");
 			else {
 				if (tbl_first[j] > i)
 					printf("%s  ", CARD_BACK);

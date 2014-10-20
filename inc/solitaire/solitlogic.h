@@ -16,15 +16,15 @@ enum MoveType { WASTE_TO_TBL,
 
 /* Returns 1 is the moving card src to dest is a valid move, and -1 if not.
  * For FLIP_STOCK and FLIP_TBL, this function will immediately return 1.
- * Returns 0 on if type if not a valid MoveType. */
+ * Returns 0 if type is not a valid MoveType. */
 int is_valid_move(enum MoveType type, const struct Card *src, const struct Card *dest);
 
 /* Makes the specified move from src to dest using solitgame.c's stock_hand,
- * tbl_hand, and fdtion_hand. Makes the move regardless of whether it is a valid solitaire
- * move, and does ONLY that (i.e. does not remove nodes).
- * It determines the correct type by looking at the MoveType. For foundation cards, pass in
- * a pointer to a pointer to a Card.
- * Returns 1 if the move is successful, -1 if not successful, 0 if invalid argument(s). */
+ * tbl_hand, and fdtion_hand. Makes the move regardless of whether it is a valid
+ * solitaire move, and does ONLY that (i.e. does not remove nodes).
+ * This determines the correct type by looking at the MoveType. For foundation cards,
+ * this function requires a pointer to a pointer to a Card.
+ * Returns 1 if the move is successful, -1 if not, and 0 if invalid argument(s). */
 int make_move(enum MoveType type, void *src, void *dest);
 
 /* Returns 1 if the game is won (i.e. all foundation piles are filled), 0 if not */

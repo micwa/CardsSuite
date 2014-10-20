@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 			while (getchar() != '\n')
 				;
         } while (option < 1 || option > NGAMES + 1);
+        
         if (option == NGAMES + 1)
         	return 0;
         game_select(games[option - 1]);

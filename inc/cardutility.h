@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 /* Stores all 52 card encodings for convenience; call init_card_encs() to initialize,
- * and free_card_encs() to release the memory */
+ * and free_card_encs() to free the memory. */
 extern char *g_card_encs[52];
 
 /* Returns the number of cards that have been played in the given hand  */
@@ -26,7 +26,7 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
  * to all 0s. (implement later) */
 struct Hand * fopen_hand(FILE *file, int nhands);
 
-/* Frees all_card_encs if they were init'd already */
+/* Frees all_card_encs if init_card_encs() had been called */
 void free_card_encs();
 
 /* Save the given LinkedHand to the specified file. This function should write the whole
