@@ -20,9 +20,10 @@ only terminals supporting UTF-8 by default are supported. Sorry Windows users!
 
 This is the classic game of war. The deck is split in two so that you receive
 half the deck and the opponent the other half. Each turn, the top card of the
-two piles is flipped over and compared. The player who has the higher card wins
-that turn, and gets to keep the opponent's card. This repeats until one player
-runs out of cards.
+each of the two piles is flipped over and compared. The player who has the
+higher card wins that turn, and gets to keep the opponent's card. This repeats
+until one player runs out of cards. That player loses, and the player who
+possesses the whole deck wins.
 
 Controls:
 
@@ -32,24 +33,25 @@ Controls:
 ##### Solitaire
 
 Klondike, or "Solitaire" as it is commonly known in the US, is a singe-player
-game where the goal is to fill up the four foundation piles each containing
-cards of the same suit from Ace to King. An extensive set of rules for
+game where the goal is to fill up the four foundation piles so that they each
+contain cards of the same suit from Ace to King. An extensive set of rules for
 Klondike/solitaire can be found [here]
 (http://www.solitaire-cardgame.com/#rules).
 
-Controls (type the character followed by <Enter>; [x-y] specifies a range):
+Controls (type the character followed by <Enter>; [x-y] denotes a range of
+possible values):
 
 * `s` - flip the stock
 * `t` - move a card from the waste to a column or foundation pile (will prompt)
     * `[1-7]` - move from waste to a column
-    * `w`, `x`, `y`, `z` - move from waste to the specified foundation pile
+    * `w`, `x`, `y`, or `z` - move from waste to the specified foundation pile
 * `[1-7]` - move a card from a tableau pile to another column or a foundation
 pile (will prompt)
     * `[1-7]` - move the LAST card from the selected tableau pile to the second
     * `[a-s]` - move MULTIPLE cards starting at the selected row to another
     column (will prompt for another column)
-    * `w`, `x`, `y`, `z` - move the last card from the selected tableau pile to
-    the specified foundation pile
+    * `w`, `x`, `y`, or `z` - move the last card from the selected tableau pile
+    to the specified foundation pile
 * Press `P` to pause (note capital 'P')
 
 ### Building from source

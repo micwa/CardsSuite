@@ -31,23 +31,25 @@
 
 #define NGAMES 2
 
-static void game_select(char *name)
-{
-	printf("\n");
-    if (strcmp(name, "war") == 0)
-        war();
-    else if (strcmp(name, "solitaire") == 0)
-    	solitaire();
-    else
-       	printf("Not a valid game.\n");
-}
-
 static void str_tolower(char *s)
 {
     while (*s != '\0') {
         *s = tolower(*s);
         s++;
     }
+}
+
+static void game_select(char *name)
+{
+	printf("\n");
+    str_tolower(name);                      /* Ignore case when launching game */
+    
+    if (strcmp(name, "war") == 0)
+        war();
+    else if (strcmp(name, "solitaire") == 0)
+    	solitaire();
+    else
+       	printf("Not a valid game.\n");
 }
 
 int main(int argc, char *argv[])
@@ -72,10 +74,9 @@ int main(int argc, char *argv[])
         if (option == NGAMES + 1)
         	return 0;
         game_select(games[option - 1]);
-    } else if (argc == 2) {
-    	str_tolower(argv[1]);				/* Launch specified game, ignoring case */
+    } else if (argc == 2)
         game_select(argv[1]);
-    } else
+    else
         printf("Too many arguments!");
 
     setlocale(LC_CTYPE, old_lcl);
