@@ -127,14 +127,14 @@ static void play_game()
         if (stock_empty_flag)
             printf("There are no more cards in the stock.\n");
         printf("\n---MOVE %d---\n", nmoves);
-    	printf("Make a move (p for pause): ");
+    	printf("Make a move (P for pause): ");
     	getopt(&option);
           
         for (int i = 0; i < 7; i++)         /* Find max rows */
             if (g_tbl_hand[i]->ncards > max_rows)
                 max_rows = g_tbl_hand[i]->ncards;
          
-        if (option == 'p') {
+        if (option == 'P') {
             curr_move = NONE;
             pause_game();
         } else if (option == 's' && !stock_empty_flag) {
