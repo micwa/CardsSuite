@@ -216,9 +216,12 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 			base = base->next;
 		base->next = node;
 	} else
-		hand->node = node;					/* If is NULL, make base the given node itself */
+		hand->node = node;
 
 	hand->ncards++;
+	base = node;
+	for (; base->next != NULL; base = base->next)	/* If the node has a next node itself */
+		hand->ncards++;
 }
 
 struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
@@ -231,6 +234,18 @@ struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
 		base = base->next;
 
 	return base->card;
+}
+
+struct CardNode * linked_hand_get_node(struct LinkedHand *hand, int index)
+{
+	if (index >= hand->ncards || index < 0)
+		return NULL;
+
+	struct CardNode *base = hand->node;
+	for (int i = 0; i < index; i++)
+		base = base->next;
+
+	return base;
 }
 
 struct CardNode * linked_hand_remove(struct LinkedHand *hand, int index, int remove_all)

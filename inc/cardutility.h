@@ -66,6 +66,9 @@ void linked_hand_add(struct LinkedHand *hand, struct CardNode *node);
 /* Returns the indexth card (starting at 0) in the LinkedHand */
 struct Card * linked_hand_get_card(struct LinkedHand *hand, int index);
 
+/* Returns the indexth CardNode (starting at 0) in the LinkedHand */
+struct CardNode * linked_hand_get_node(struct LinkedHand *hand, int index);
+
 /* Removes the CardNode at the specified index from the LinkedHand, and decrements
  * ncards by 1. Returns the removed CardNode (unmodified).
  * If remove_all is 0, the CardNode at index - 1 (if index != 0) will have
