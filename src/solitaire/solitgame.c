@@ -181,33 +181,23 @@ static void play_game()
             printf("Select a column, foundation pile, or row: ");
             getopt(&option);
             row = option - 'a';				/* Only used when moving multiple cards */
-            
-            if (option >= '1' && option <= '7') {
-                col2 = option - '1';
-                row = g_tbl_hand[col]->ncards - 1;
-                if (g_tbl_hand[col2]->ncards == 0)
-                	curr_move = TBL_TO_TBL_EMPTY;
-                else
-                	curr_move = TBL_TO_TBL;
 
-                card_src = linked_hand_get_card(g_tbl_hand[col], row);
-                card_dest = linked_hand_get_card(g_tbl_hand[col2], g_tbl_hand[col2]->ncards - 1);
-                node = linked_hand_get_node(g_tbl_hand[col], row);
-                src = (void *) node;
-                dest = (void *) g_tbl_hand[col2];
-            } else if (option >= 'w' && option <= 'z') {
+            if (option >= 'w' && option <= 'z') {
             	row = g_tbl_hand[col]->ncards - 1;
                 curr_move = TBL_SINGLE_TO_FDTION;
                 card_src = linked_hand_get_card(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1);
                 card_dest = g_fdtion_top[option - 'w'];
                 src = (void *) card_src;
                 dest = (void *) &g_fdtion_top[option - 'w'];
-            } else if (row >= tbl_first[col] &&	row < g_tbl_hand[col]->ncards) {
-            	/* Prompt for column */
-            	draw_solit_board(waste_index, tbl_first, 0, 1);
-            	printf("Select a column: ");
-            	getopt(&option);
-
+            } else {
+            	/* Prompt for column if alphabet character was typed */
+            	if (row >= tbl_first[col] && row < g_tbl_hand[col]->ncards) {
+					draw_solit_board(waste_index, tbl_first, 0, 1);
+					printf("Select a column: ");
+					getopt(&option);
+            	} else
+            		row = g_tbl_hand[col]->ncards - 1;		/* Set the proper row */
+            	/* TBL_SINGLE and TBL_MANY are handled the same way */
             	if (option >= '1' && option <= '7') {
             		col2 = option - '1';
             		if (g_tbl_hand[col2]->ncards == 0)
@@ -222,8 +212,7 @@ static void play_game()
             		dest = (void *) g_tbl_hand[col2];
             	} else
             		goto error;
-            } else
-            	goto error;
+            }
         } else {
 error:
             error_flag = 1;
@@ -248,6 +237,7 @@ error:
         		case TBL_SINGLE_TO_FDTION:
         			/* If the resulting amount of cards - 1 is less than the previous tbl_first[i],
         			 * then set to the last card (essentially flip it over). */
+        			linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
         			if (g_tbl_hand[col]->ncards <= tbl_first[col])
         				tbl_first[col] = g_tbl_hand[col]->ncards - 1;
         			break;
