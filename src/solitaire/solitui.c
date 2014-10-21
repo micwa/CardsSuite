@@ -101,14 +101,13 @@ static void print_stats()
 	if (file != NULL) {
 		fclose(file);
 	} else
-		printf("No stats file found.\n");
+		printf("\nNo stats file found.\n");
 
-	printf("------------------------------\n\n");
-	printf("Player stats:\n\n");
-	printf("    Wins: %d\n", wins);
-	printf("    Losses: %d\n", losses);
-	printf("    Lowest number of moves: %d\n", score);
-	printf("------------------------------\n\n");
+	printf("\n---------PLAYER STATS---------\n\n");
+	printf("  Wins: %d\n", wins);
+	printf("  Losses: %d\n", losses);
+	printf("  Lowest number of moves: %d\n", score);
+	printf("\n------------------------------\n\n");
 }
 
 /* Start menu */
