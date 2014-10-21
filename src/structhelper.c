@@ -8,7 +8,8 @@
 struct CardNode * card_node_create(struct Card *card, struct CardNode *next)
 {
 	struct CardNode *node = malloc(sizeof(struct CardNode));
-	node->card = card;						/* Set card in new node; does NOT allocate new memory for Card */
+	node->card = malloc(sizeof(struct Card));
+	*node->card = *card;						/* Set card in new node; DOES allocate new memory for the card */
 	node->next = next;
 
 	return node;
