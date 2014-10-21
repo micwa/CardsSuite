@@ -19,18 +19,18 @@ only terminals supporting UTF-8 by default are supported. Sorry Windows users!
 #### War
 
 This is the classic game of war. The deck is split in two so that you receive
-half the deck and the opponent the other half. Each turn, the top card of the
-each of the two piles is flipped over and compared. The player who has the
-higher card wins that turn, and gets to keep the opponent's card. This repeats
-until one player runs out of cards. That player loses, and the player who
-possesses the whole deck wins.
+half the deck and the opponent the other half. Each turn, the top card of each
+of the two piles is flipped over and compared. The player who has the higher
+card wins that turn, and gets to keep the opponent's card. This repeats until
+one player runs out of cards. That player loses, and the player who possesses
+the whole deck wins.
 
 Controls:
 
 * Press `<Enter>` to play the next card
 * Press `p` to pause
 
-##### Solitaire
+#### Solitaire
 
 Klondike, or "Solitaire" as it is commonly known in the US, is a singe-player
 game where the goal is to fill up the four foundation piles so that they each
@@ -38,7 +38,7 @@ contain cards of the same suit from Ace to King. An extensive set of rules for
 Klondike/solitaire can be found [here]
 (http://www.solitaire-cardgame.com/#rules).
 
-Controls (type the character followed by <Enter>; [x-y] denotes a range of
+Controls (type the character followed by `<Enter>`; [x-y] denotes a range of
 possible values):
 
 * `s` - flip the stock
