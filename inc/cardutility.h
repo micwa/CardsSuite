@@ -29,7 +29,12 @@ struct Hand * fopen_hand(FILE *file, int nhands);
 /* Frees all_card_encs if init_card_encs() had been called */
 void free_card_encs();
 
-/* Save the given LinkedHand to the specified file. This function should write the whole
+/* Saves the given Hand to the specified file. This function should write the hand in
+ * two lines, differing from writing a LinkedHand so that fopen_hand() can distinguish
+ * between them. */
+void fsave_hand(const struct Hand *hand, FILE *file);
+
+/* Saves the given LinkedHand to the specified file. This function should write the whole
  * hand on one line, and append a newline character at the end. */
 void fsave_linked_hand(const struct LinkedHand *hand, FILE *file);
 
