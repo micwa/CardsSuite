@@ -27,6 +27,7 @@ static struct Player *player = NULL;        /* Primarily for storing original ha
 static int nmoves = 0;						/* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
 static int is_encs_init = 0;
+static int opened_hand = 0;
 
 static void fload_stats()
 {
@@ -57,8 +58,18 @@ static int fsave_stats()
 /* Frees all malloc'd memory (players, hands, etc.) */
 static void game_destroy()
 {
-    if (player != NULL) {
-    	free_hand(player->hand, 1);
+	if (opened_hand) {						/* Solution for now */
+		for (int i = 0; i < 4; i++)
+			if (g_fdtion_top[i] != NULL)
+				free(g_fdtion_top[i]);
+		for (int i = 0; i < 7; i++)
+			free_hand(&player->hand[i], 0);
+	}
+	if (player != NULL) {
+		if (opened_hand)
+			free(player->hand);
+		else
+			free_hand(player->hand, 1);
         free(player);
     }
     /* free() everything */
@@ -256,6 +267,7 @@ error:
         /* On win game */
         if (solit_game_win(g_fdtion_top)) {
         	g_solit_curr_state = WIN;
+        	player->curr_score = nmoves;
         	fsave_stats();
         	show_solit_menu();
         }
@@ -279,20 +291,34 @@ void resume_solitgame()
 
 void save_solitgame()
 {
-	/*FILE *file = fopen(SOLIT_SAVE, "w");
+	int vals[4] = { 0, 0, 0, 0 };			/* For the foundation card values */
+	FILE *file = fopen(SOLIT_SAVE, "w");
 	if (file == NULL) {
-		printf("Error writing save file: returning\n");
+		printf("Error opening save file in write mode: returning\n");
 		return;
 	}
-	fprintf(file, "%d\n", nturns);
+    /* Write out the number of moves, and the waste index; tbl_first[i] go on the next line. */
+	fprintf(file, "%d %d\n", nmoves, waste_index);
+	fprintf(file, "%d", tbl_first[0]);
+	for (int i = 1; i < 7; i++)
+		fprintf(file, " %d", tbl_first[i]);
+	fprintf(file, "\n");
+    
+    /* Record the g_fdtion_top cards as single card values; then save the stock/tableau Hands */
+	for (int i = 0; i < 4; i++)
+		if (g_fdtion_top[i] != NULL)
+			vals[i] = get_card_value(g_fdtion_top[i]);
+    fprintf(file, "%d %d %d %d\n", vals[0], vals[1], vals[2], vals[3]);
 
-	fsave_linked_hand(cpu->hand, file);
-	fsave_linked_hand(player->hand, file);
+	fsave_hand(g_stock_hand, file);
+    for (int i = 0; i < 7; i++)
+        fsave_linked_hand(g_tbl_hand[i], file);
+        
     if (fsave_stats() < 0) {
         printf("Error saving player stats: returning\n");
         return;
     }
-    fclose(file);*/
+    fclose(file);
     printf("\nSuccessfully saved game!\n\n");
 }
 
@@ -305,7 +331,7 @@ void start_new_solitgame()
     struct Hand *deck = gen_ordered_deck();      	/* The player keeps the original hand with malloc'd hand/cards (and isplayed, but we don't use that) */
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     
-    /* Initialize game, then fill up hands */
+    /* Allocate all hands, then fill up hands */
     game_init();
 
     for (count = 0; count < NCARDS_STOCK; count++)	/* Note that Hand copies the cards from the deck; the LinkedHands do not */
@@ -318,6 +344,7 @@ void start_new_solitgame()
     	tbl_first[i] = i;
     }
     player->hand = deck;
+    opened_hand = 0;
     
 	nmoves = 0;
 	waste_index = -1;
@@ -329,25 +356,47 @@ void start_saved_solitgame()
 {
 	game_destroy();
 
-	int moves = 0;
-	/*FILE *file = fopen(WAR_SAVE, "r");
+	int moves = 0, vals[4] = { 0, 0, 0, 0 };
+	FILE *file = fopen(SOLIT_SAVE, "r");
 	if (file == NULL) {
 		printf("No save file found, or error opening file.\n");
-		show_war_menu();
+		show_solit_menu();
 		return;
 	}
-	Get the move number first
-	fscanf(file, "%9d", &turns);
+
+	/* Get the move number, waste index, tbl_first[i] */
+	game_init();
+	fscanf(file, "%9d", &nmoves);
+	fscanf(file, "%2d", &waste_index);
 	while (fgetc(file) != '\n')
 		;
-	curr_hand = fopen_hand(file, 2);
-	fclose(file);
+	for (int i = 0; i < 7; i++)
+		fscanf(file, "%2d", &tbl_first[i]);
+	while (fgetc(file) != '\n')
+		;
 
-	players_init();
-	fload_stats();
-	fill_linked_hand(cpu->hand, &curr_hand[0]);
-	fill_linked_hand(player->hand, &curr_hand[1]);
-	opened_hand = 1; */
+	/* Foundation piles */
+	fscanf(file, "%2d %2d %2d %2d", &vals[0], &vals[1], &vals[2], &vals[3]);
+	while (fgetc(file) != '\n')
+		;
+	for (int i = 0; i < 4; i++) {
+		if (vals[i] != 0) {
+			g_fdtion_top[i] = malloc(sizeof(struct Card));
+			g_fdtion_top[i]->number = vals[i] % 13 + 1;
+			g_fdtion_top[i]->suit = vals[i] / 13;
+		} else
+			g_fdtion_top[i] = NULL;
+	}
+
+	/* Open the stock hand and the LinkedHands */
+	free_hand(g_stock_hand, 1);
+	g_stock_hand = fopen_hand(file, 1);
+	player->hand = fopen_hand(file, 7);		/* Store for free()ing later */
+	for (int i = 0; i < 7; i++)
+		fill_linked_hand(g_tbl_hand[i], &player->hand[i]);
+
+	opened_hand = 1;
+	fclose(file);
 
 	nmoves = moves;
 	g_solit_curr_state = START;
