@@ -18,16 +18,8 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
 			return (src->number == 13) ? 1 : -1;
 	}
 
-	int opp_suits, num_src = src->number, num_dest;
-	enum Suit suit_src = src->suit, suit_dest;
-
-	if (dest == NULL) {						/* For when type = xx_TO_FDTION and foundation pile(s) is empty */
-		num_dest = -1;						/* Dummy values */
-		suit_dest = CLUB;
-	} else {
-		num_dest = dest->number;
-		suit_dest = dest->suit;
-	}
+	int opp_suits, num_src = src->number, num_dest = dest->number;
+	enum Suit suit_src = src->suit, suit_dest = dest->suit;
 
 	/* Determine whether the suits are opposite */
 	if (suit_src == CLUB || suit_src == SPADE) {
@@ -52,7 +44,7 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
 				return -1;
 		case WASTE_TO_FDTION:
 		case TBL_SINGLE_TO_FDTION:
-			if (dest == NULL) {
+			if (dest->number < 1) {			/* Don't assume that number will be -1 */
 				if (num_src == 1)
 					return 1;
 				else
@@ -70,7 +62,7 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
 
 int make_move(enum MoveType type, void *src, void *dest)
 {
-	struct Card **pcard;
+	struct Card *card;
 	struct CardNode *node;
 
 	switch (type) {
@@ -89,8 +81,8 @@ int make_move(enum MoveType type, void *src, void *dest)
 			return 1;
 		case WASTE_TO_FDTION:				/* src = Card, dest = Card */
 		case TBL_SINGLE_TO_FDTION:
-			pcard = (struct Card **) dest;
-			*pcard = (struct Card *)src;
+			card = (struct Card *)dest;
+			*card = *(struct Card *)src;	/* COPY the card, not the address */
 			return 1;
 		default:
 			return 0;
@@ -100,7 +92,7 @@ int make_move(enum MoveType type, void *src, void *dest)
 int solit_game_win(struct Card *fdtion[4])
 {
 	for (int i = 0; i < 4; i++)
-		if (fdtion[i] != NULL) {
+		if (fdtion[i] != NULL) {			/* Shouldn't be NULL in the first place */
 			if (fdtion[i]->number != 13)
 				return 0;
 		} else

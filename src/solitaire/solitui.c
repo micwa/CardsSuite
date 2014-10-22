@@ -40,7 +40,7 @@ void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw
 		printf("%s  %s  ", CARD_BACK, g_card_encs[get_card_value(&g_stock_hand->cards[waste_index])]);
 	}
 	for (int i = 0; i < 4; i++)
-		if (g_fdtion_top[i] != NULL)
+		if (g_fdtion_top[i]->number > 0)
 			fdtion_encs[i] = g_card_encs[get_card_value(g_fdtion_top[i])];
 	printf("%3s", " ");
 	printf("%s  %s  %s  %s  \n", fdtion_encs[0], fdtion_encs[1], fdtion_encs[2], fdtion_encs[3]);
