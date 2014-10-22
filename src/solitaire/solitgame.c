@@ -58,11 +58,6 @@ static int fsave_stats()
 /* Frees all malloc'd memory (players, hands, etc.) */
 static void game_destroy()
 {
-	if (opened_hand) {						/* Foundation is malloc()'d if hand is opened */
-		for (int i = 0; i < 4; i++)
-			if (g_fdtion_top[i] != NULL)
-				free(g_fdtion_top[i]);
-	}
 	if (player != NULL)
 		free(player);
 
@@ -72,6 +67,9 @@ static void game_destroy()
     for (int i = 0; i < 7; i++)
         if (g_tbl_hand[i] != NULL)
             free_linked_hand(g_tbl_hand[i], 1);
+    for (int i = 0; i < 4; i++)				/* Cards are always malloc()'d */
+    	if (g_fdtion_top[i] != NULL)
+    		free(g_fdtion_top[i]);
 }
 
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
@@ -87,8 +85,11 @@ static void game_init()
 	g_stock_hand = hand_create(NCARDS_STOCK);
     for (int i = 0; i < 7; i++)
     	g_tbl_hand[i] = linked_hand_create();
-    for (int i = 0; i < 4; i++)
-    	g_fdtion_top[i] = NULL;
+    for (int i = 0; i < 4; i++) {
+    	g_fdtion_top[i] = malloc(sizeof(struct Card));
+    	g_fdtion_top[i]->number = -1;		/* Set illogical values */
+    	g_fdtion_top[i]->suit = -1;
+    }
 
     if (!is_encs_init) {					/* Initialize card encodings */
     	init_card_encs();
@@ -174,7 +175,7 @@ static void play_game()
             	card_src = &g_stock_hand->cards[waste_index];
             	card_dest = g_fdtion_top[col];
             	src = (void *) card_src;
-            	dest = (void *) &g_fdtion_top[col];
+            	dest = (void *) g_fdtion_top[col];
             } else
             	goto error;
         } else if (option >= '1' && option <= '7') {
@@ -193,7 +194,7 @@ static void play_game()
                 card_src = linked_hand_get_card(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1);
                 card_dest = g_fdtion_top[option - 'w'];
                 src = (void *) card_src;
-                dest = (void *) &g_fdtion_top[option - 'w'];
+                dest = (void *) g_fdtion_top[option - 'w'];
             } else {
             	/* Prompt for column if alphabet character was typed */
             	if (row >= tbl_first[col] && row < g_tbl_hand[col]->ncards) {
@@ -243,7 +244,7 @@ error:
         		case TBL_TO_TBL:
         			/* If the resulting amount of cards - 1 is less than the previous tbl_first[i],
         			 * then set to the last card (essentially flip it over). */
-        			tofree = linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
+        			linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
         			if (g_tbl_hand[col]->ncards <= tbl_first[col])
         				tbl_first[col] = g_tbl_hand[col]->ncards - 1;
         			break;
@@ -308,7 +309,7 @@ void save_solitgame()
     
     /* Record the g_fdtion_top cards as single card values; then save the stock/tableau Hands */
 	for (int i = 0; i < 4; i++)
-		if (g_fdtion_top[i] != NULL)
+		if (g_fdtion_top[i]->number > 0)
 			vals[i] = get_card_value(g_fdtion_top[i]);
     fprintf(file, "%d %d %d %d\n", vals[0], vals[1], vals[2], vals[3]);
 
@@ -382,12 +383,10 @@ void start_saved_solitgame()
 	while (fgetc(file) != '\n')
 		;
 	for (int i = 0; i < 4; i++) {
-		if (vals[i] != 0) {
-			g_fdtion_top[i] = malloc(sizeof(struct Card));
+		if (vals[i] != 0) {					/* Initialize them when appropriate; else leave the -1 values */
 			g_fdtion_top[i]->number = vals[i] % 13 + 1;
 			g_fdtion_top[i]->suit = vals[i] / 13;
-		} else
-			g_fdtion_top[i] = NULL;
+		}
 	}
 
 	/* Open the stock hand and the LinkedHands */
