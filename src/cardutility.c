@@ -38,12 +38,11 @@ int card_compare(const struct Card *c1, const struct Card *c2)
 
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 {
-	struct CardNode *prev = l_hand->node, *curr;	/* If l_hand->node exists, overwrites it */
-	if (prev == NULL) {
-    	l_hand->node = card_node_create(&hand->cards[0], NULL);
-        prev = l_hand->node;
-    }
-	prev->card = &hand->cards[0];
+	struct CardNode *prev, *curr;
+
+	/* If l_hand->node exists, overwrites it */
+    l_hand->node = card_node_create(&hand->cards[0], NULL);
+    prev = l_hand->node;
 
 	for (int i = 1; i < hand->ncards; i++) {
 		curr = card_node_create(&hand->cards[i], NULL);
@@ -216,8 +215,8 @@ int get_card_value(const struct Card *card)
 
 int get_next_unplayed(struct Hand *hand, int index, int do_loop)
 {
-	if (index < 0)							/* Set to 0 for invalid indices */
-		index++;
+	if (index < 0)							/* Set to 0 for invalid indices (whether intended or not) */
+		index = 0;
 
 	for (int i = index; i < hand->ncards; i++)
 		if (hand->isplayed[i] == 0)

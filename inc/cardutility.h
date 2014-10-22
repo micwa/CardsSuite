@@ -15,15 +15,15 @@ int cards_played(const struct Hand *hand);
  * The ranking of suits is defined in carddefs.h */
 int card_compare(const struct Card *c1, const struct Card *c2);
 
-/* Fills the given LinkedHand with the given Hand. If CardNode is NULL, initializes it; otherwise,
-this sets the CardNode's card to the Hand's first card (note: if the card exists, this will overwrite
-it and might cause a memory leak). */
+/* Fills the given LinkedHand with the given Hand. This function assumes that the given
+ * LinkedHand is empty, i.e. creates a new node for the LinkedHand regardless of whether
+ * one already exists or not. */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
 /* Creates an array of hands from the hand(s) stored in the FILE; the user must specify
- * the number of hands (i.e. number of lines to read). 
- * Distinguishes between regular Hands and LinkedHands - for LinkedHands, set isplayed
- * to all 0s. (implement later) */
+ * the number of hands (i.e. sets of lines to read).
+ * Distinguishes between regular Hands and LinkedHands based on the fsave_hand() and
+ * fsave_linked_hand(); for LinkedHands, sets isplayed to all 0s. */
 struct Hand * fopen_hand(FILE *file, int nhands);
 
 /* Frees all_card_encs if init_card_encs() had been called */
