@@ -23,7 +23,7 @@ struct Card *g_fdtion_top[4] = { NULL };   	/* No point in creating an array/oth
 /* tbl_first[i] is the index of the first card in tbl_hand[i] to be drawn face up, where [0] = card 1, etc.
  * tbl_first[i] must be in the range (0...ncards-1), unless it equals -1, in which case all cards are face down */
 static int tbl_first[7];
-static struct Player *player = NULL;        /* Primarily for storing original hand; also keeps track of stats */
+static struct Player *player = NULL;        /* Used ONLY for tracking stats */
 static int nmoves = 0;						/* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
 static int is_encs_init = 0;
@@ -58,26 +58,20 @@ static int fsave_stats()
 /* Frees all malloc'd memory (players, hands, etc.) */
 static void game_destroy()
 {
-	if (opened_hand) {						/* Solution for now */
+	if (opened_hand) {						/* Foundation is malloc()'d if hand is opened */
 		for (int i = 0; i < 4; i++)
 			if (g_fdtion_top[i] != NULL)
 				free(g_fdtion_top[i]);
-		for (int i = 0; i < 7; i++)
-			free_hand(&player->hand[i], 0);
 	}
-	if (player != NULL) {
-		if (opened_hand)
-			free(player->hand);
-		else
-			free_hand(player->hand, 1);
-        free(player);
-    }
-    /* free() everything */
+	if (player != NULL)
+		free(player);
+
+    /* free() all hands */
     if (g_stock_hand != NULL)
     	free_hand(g_stock_hand, 1);
     for (int i = 0; i < 7; i++)
         if (g_tbl_hand[i] != NULL)
-            free_linked_hand(g_tbl_hand[i], 0);
+            free_linked_hand(g_tbl_hand[i], 1);
 }
 
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
@@ -235,6 +229,8 @@ error:
         	make_move(curr_move, src, dest);
 
         	switch (curr_move) {
+        		struct CardNode *tofree;
+
         		case WASTE_TO_TBL_EMPTY:	/* Only case where col = destination column */
         			tbl_first[col] = 0;		/* Set to 0 since the pile now has one card */
         		case WASTE_TO_TBL:
@@ -245,10 +241,16 @@ error:
         		case TBL_TO_TBL_EMPTY:
         			tbl_first[col2] = 0;
         		case TBL_TO_TBL:
-        		case TBL_SINGLE_TO_FDTION:
         			/* If the resulting amount of cards - 1 is less than the previous tbl_first[i],
         			 * then set to the last card (essentially flip it over). */
-        			linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
+        			tofree = linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
+        			if (g_tbl_hand[col]->ncards <= tbl_first[col])
+        				tbl_first[col] = g_tbl_hand[col]->ncards - 1;
+        			break;
+        		case TBL_SINGLE_TO_FDTION:
+        			tofree = linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
+        			free(tofree->card);
+        			free(tofree);
         			if (g_tbl_hand[col]->ncards <= tbl_first[col])
         				tbl_first[col] = g_tbl_hand[col]->ncards - 1;
         			break;
@@ -327,8 +329,8 @@ void start_new_solitgame()
 	printf("Starting new game...\n");
     game_destroy();
     
-    int count = 0;							        /* For counting the index of the generated deck */
-    struct Hand *deck = gen_ordered_deck();      	/* The player keeps the original hand with malloc'd hand/cards (and isplayed, but we don't use that) */
+    int count = 0;							/* For counting the index of the generated deck */
+    struct Hand *deck = gen_ordered_deck();	/* Temporary - will free right after using */
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     
     /* Allocate all hands, then fill up hands */
@@ -343,7 +345,7 @@ void start_new_solitgame()
     	/* Don't need to set g_tbl_hand[i]->ncards since add()ing it sets it already */
     	tbl_first[i] = i;
     }
-    player->hand = deck;
+    free_hand(deck, 1);
     opened_hand = 0;
     
 	nmoves = 0;
@@ -391,10 +393,13 @@ void start_saved_solitgame()
 	/* Open the stock hand and the LinkedHands */
 	free_hand(g_stock_hand, 1);
 	g_stock_hand = fopen_hand(file, 1);
-	player->hand = fopen_hand(file, 7);		/* Store for free()ing later */
-	for (int i = 0; i < 7; i++)
+	player->hand = fopen_hand(file, 7);		/* Use player->hand as a temporary variable */
+	for (int i = 0; i < 7; i++) {
 		fill_linked_hand(g_tbl_hand[i], &player->hand[i]);
+		free_hand(&player->hand[i], 0);
+	}
 
+	free(player->hand);
 	opened_hand = 1;
 	fclose(file);
 
