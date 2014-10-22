@@ -1,9 +1,10 @@
 #include "wargame.h"
 #include "warui.h"
 #include "carddefs.h"
+#include "gamedefs.h"
 #include "cardutility.h"
 #include "structhelper.h"
-#include "gamedefs.h"
+#include "fileops.h"
 
 #include <stdio.h>
 #include <stdlib.h>

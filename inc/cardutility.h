@@ -2,7 +2,6 @@
 #define CARDUTIL_H_
 
 #include "carddefs.h"
-#include <stdio.h>
 
 /* Stores all 52 card encodings for convenience; call init_card_encs() to initialize,
  * and free_card_encs() to free the memory. */
@@ -20,23 +19,8 @@ int card_compare(const struct Card *c1, const struct Card *c2);
  * one already exists or not. */
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
-/* Creates an array of hands from the hand(s) stored in the FILE; the user must specify
- * the number of hands (i.e. sets of lines to read).
- * Distinguishes between regular Hands and LinkedHands based on the fsave_hand() and
- * fsave_linked_hand(); for LinkedHands, sets isplayed to all 0s. */
-struct Hand * fopen_hand(FILE *file, int nhands);
-
 /* Frees all_card_encs if init_card_encs() had been called */
 void free_card_encs();
-
-/* Saves the given Hand to the specified file. This function should write the hand in
- * two lines, differing from writing a LinkedHand so that fopen_hand() can distinguish
- * between them. */
-void fsave_hand(const struct Hand *hand, FILE *file);
-
-/* Saves the given LinkedHand to the specified file. This function should write the whole
- * hand on one line, and append a newline character at the end. */
-void fsave_linked_hand(const struct LinkedHand *hand, FILE *file);
 
 /* Returns a Hand pointer with 52 cards in order from Ace to King, in the suit order
  * specified by carddefs.h */
