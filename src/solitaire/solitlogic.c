@@ -1,4 +1,5 @@
 #include "solitlogic.h"
+#include "solitdefs.h"
 #include "carddefs.h"
 #include "cardutility.h"
 #include "structhelper.h"

@@ -1,4 +1,5 @@
 #include "solitgame.h"
+#include "solitdefs.h"
 #include "solitui.h"
 #include "solitlogic.h"
 #include "carddefs.h"
