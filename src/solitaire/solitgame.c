@@ -295,7 +295,7 @@ void resume_solitgame()
 
 void save_solitgame()
 {
-	int vals[4] = { 0, 0, 0, 0 };			/* For the foundation card values */
+	int vals[4] = { -1, -1, -1, -1 };			/* For the foundation card values; note that it is possible for card values to be 0 */
 	FILE *file = fopen(SOLIT_SAVE, "w");
 	if (file == NULL) {
 		printf("Error opening save file in write mode: returning\n");
@@ -360,7 +360,8 @@ void start_saved_solitgame()
 {
 	game_destroy();
 
-	int moves = 0, vals[4] = { 0, 0, 0, 0 };
+	int moves = 0, vals[4] = { -1, -1, -1, -1 };
+	struct Hand **temp;						/* For storing fopen_hand() arrays (of pointers) */
 	FILE *file = fopen(SOLIT_SAVE, "r");
 	if (file == NULL) {
 		printf("No save file found, or error opening file.\n");
@@ -384,7 +385,7 @@ void start_saved_solitgame()
 	while (fgetc(file) != '\n')
 		;
 	for (int i = 0; i < 4; i++) {
-		if (vals[i] != 0) {					/* Initialize them when appropriate; else leave the -1 values */
+		if (vals[i] >= 0) {					/* Initialize them when appropriate; else leave the -1 values */
 			g_fdtion_top[i]->number = vals[i] % 13 + 1;
 			g_fdtion_top[i]->suit = vals[i] / 13;
 		}
@@ -392,12 +393,16 @@ void start_saved_solitgame()
 
 	/* Open the stock hand and the LinkedHands */
 	free_hand(g_stock_hand, 1);
-	g_stock_hand = fopen_hand(file, 1);
-	player->hand = fopen_hand(file, 7);		/* Use player->hand as a temporary variable */
+	temp = fopen_hand(file, 1);
+	g_stock_hand = temp[0];
+	free(temp);
+
+	temp = fopen_hand(file, 7);
 	for (int i = 0; i < 7; i++) {
-		fill_linked_hand(g_tbl_hand[i], &player->hand[i]);
-		free_hand(&player->hand[i], 0);
+		fill_linked_hand(g_tbl_hand[i], temp[i]);
+		free_hand(temp[i], 1);
 	}
+	free(temp);
 
 	free(player->hand);
 	opened_hand = 1;
