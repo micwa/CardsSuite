@@ -27,8 +27,6 @@ static int tbl_first[7];
 static struct Player *player = NULL;        /* Used ONLY for tracking stats */
 static int nmoves = 0;						/* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
-static int is_encs_init = 0;
-static int opened_hand = 0;
 
 static void fload_stats()
 {
@@ -91,11 +89,7 @@ static void game_init()
     	g_fdtion_top[i]->number = -1;		/* Set illogical values */
     	g_fdtion_top[i]->suit = -1;
     }
-
-    if (!is_encs_init) {					/* Initialize card encodings */
-    	init_card_encs();
-    	is_encs_init = 1;
-    }
+    init_card_encs();
 }
 
 static void getopt(char *option)
@@ -348,7 +342,6 @@ void start_new_solitgame()
     	tbl_first[i] = i;
     }
     free_hand(deck, 1);
-    opened_hand = 0;
     
 	nmoves = 0;
 	waste_index = -1;
@@ -405,7 +398,6 @@ void start_saved_solitgame()
 	free(temp);
 
 	free(player->hand);
-	opened_hand = 1;
 	fclose(file);
 
 	nmoves = moves;

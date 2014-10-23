@@ -14,7 +14,8 @@ const char *CARD_BACK = "\xf0\x9f\x82\xa0";
 char *g_card_encs[52] = { NULL };
 
 /* Private constants/variables */
-static int isrand_init = 0;
+static int is_rand_init = 0;
+static int is_encs_init = 0;
 
 int cards_played(const struct Hand *hand)
 {
@@ -53,10 +54,11 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 
 void free_card_encs()
 {
-	if (g_card_encs[0] == NULL)				/* Technically, all card_encs should be init.'d at the same time */
-		return;
-	for (int i = 0; i < 52; i++)
-		free(g_card_encs[i]);
+	if (is_encs_init) {                     /* Keep track of initialization here (in cardutil) */
+        for (int i = 0; i < 52; i++)
+            free(g_card_encs[i]);
+        is_encs_init = 0;
+    }
 }
 
 struct Hand * gen_ordered_deck()
@@ -76,9 +78,9 @@ struct Card gen_random_card()
     int num, suit;
     struct Card card;
 
-    if (!isrand_init) {
+    if (!is_rand_init) {
     	srand(time(NULL));
-    	isrand_init = 1;
+    	is_rand_init = 1;
     }
     num = rand() % 13 + 1;					/* Must be in between 1 and 13 */
     suit = rand() / 13;
@@ -155,11 +157,14 @@ int get_next_unplayed(struct Hand *hand, int index, int do_loop)
 
 void init_card_encs()
 {
-	struct Hand *hand = gen_ordered_deck();	/* Do this because get_card_encoding doesn't accept ints */
-	for (int i = 0; i < 52; i++)
-		g_card_encs[i] = get_card_encoding(&hand->cards[i]);
+    if (!is_encs_init) {
+        struct Hand *hand = gen_ordered_deck();	    /* Do this because get_card_encoding doesn't accept ints */
+        for (int i = 0; i < 52; i++)
+            g_card_encs[i] = get_card_encoding(&hand->cards[i]);
 
-	free_hand(hand, 1);
+        free_hand(hand, 1);
+        is_encs_init = 1;
+    }
 }
 
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
@@ -239,9 +244,9 @@ void shuffle_hand(struct Hand *hand, int ntimes)
 	int swap1, swap2, ncards = hand->ncards;
 	struct Card temp, *cards = hand->cards;
 
-	if (!isrand_init) {
+	if (!is_rand_init) {
 		srand(time(NULL));
-		isrand_init = 1;
+		is_rand_init = 1;
 	}
 	for (int i = 0; i < ntimes; i++) {
 		swap1 = rand() % ncards;			/* Thankfully, we have ncards */

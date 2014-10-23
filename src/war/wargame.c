@@ -18,7 +18,6 @@ enum GameState war_curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
 static int nturns = 0;						/* Turns played so far */
-static int is_encs_init = 0;
 
 static void fload_stats()
 {
@@ -73,11 +72,8 @@ static void game_init()
 
 	cpu->hand = linked_hand_create();
 	player->hand = linked_hand_create();
-
-	if (!is_encs_init) {					/* Initialize card encodings */
-		init_card_encs();
-		is_encs_init = 1;
-	}
+    
+    init_card_encs();
 }
 
 /* Set the current state to PAUSE and bring up the pause menu */
