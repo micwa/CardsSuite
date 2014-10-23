@@ -13,7 +13,7 @@ struct CardNode * card_node_create(struct Card *card, struct CardNode *next);
 void free_hand(struct Hand *hand, int do_free_hand);
 
 /* Frees the memory allocated for the LinkedHand AND for all CardNodes (and for cards if specified) */
-void free_linked_hand(struct LinkedHand *hand, int do_freecards);
+void free_linked_hand(struct LinkedHand *hand, int do_free_cards);
 
 /* Creates a Hand with the specified number of cards, and isplayed set to all 0 */
 struct Hand * hand_create(int ncards);

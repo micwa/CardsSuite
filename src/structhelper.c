@@ -23,13 +23,13 @@ void free_hand(struct Hand *hand, int do_free_hand)
 		free(hand);
 }
 
-void free_linked_hand(struct LinkedHand *hand, int do_freecards)
+void free_linked_hand(struct LinkedHand *hand, int do_free_cards)
 {
 	struct CardNode *node, *prev;
 
 	node = hand->node;
 	while (node != NULL) {					/* Go through nodes, freeing current one and going on to the next */
-		if (do_freecards)
+		if (do_free_cards)
 			free(node->card);
 		prev = node;
 		node = node->next;
