@@ -67,7 +67,6 @@ struct Hand * gen_ordered_deck()
     for (int i = 0; i < 52; i++) {			/* Populate the deck */
         cards[i].number = i % 13 + 1;
         cards[i].suit = i / 13;
-        hand->isplayed[i] = 1;
     }
     return hand;
 }

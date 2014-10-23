@@ -69,7 +69,7 @@ static void game_init()
 {
 	cpu = malloc(sizeof(struct Player_L));
 	player = malloc(sizeof(struct Player_L));
-	//fload_stats();
+	fload_stats();
 
 	cpu->hand = linked_hand_create();
 	player->hand = linked_hand_create();
