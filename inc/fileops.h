@@ -8,7 +8,7 @@
  * the number of hands (i.e. sets of lines to read).
  * Distinguishes between regular Hands and LinkedHands based on the fsave_hand() and
  * fsave_linked_hand(); for LinkedHands, sets isplayed to all 0s. */
-struct Hand * fopen_hand(FILE *file, int nhands);
+struct Hand ** fopen_hand(FILE *file, int nhands);
 
 /* Saves the given Hand to the specified file. This function should write the hand in
  * two lines, differing from writing a LinkedHand so that fopen_hand() can distinguish

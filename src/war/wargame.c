@@ -69,7 +69,7 @@ static void game_init()
 {
 	cpu = malloc(sizeof(struct Player_L));
 	player = malloc(sizeof(struct Player_L));
-	fload_stats();
+	//fload_stats();
 
 	cpu->hand = linked_hand_create();
 	player->hand = linked_hand_create();
@@ -194,16 +194,18 @@ void start_new_wargame()
     game_destroy();							/* If quitting previous game */
     
     /* Set up LinkedHands, then play */
-    struct Hand *deck = gen_ordered_deck(), *split;
+    struct Hand *deck = gen_ordered_deck(), **split;
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     split = split_hand(deck, 2);
 
     /* Initialize game, load stats */
     game_init();
-    fill_linked_hand(cpu->hand, &split[0]);
-    fill_linked_hand(player->hand, &split[1]);
-    free(split);						    /* free() split before deck because deck contains the original cards */
-    free_hand(deck, 1);
+    fill_linked_hand(cpu->hand, split[0]);
+    fill_linked_hand(player->hand, split[1]);
+    free_hand(deck, 1);						/* Free all used Hands */
+    for (int i = 0; i < 2; i++)
+    	free_hand(split[i], 1);
+    free(split);
     
 	nturns = 0;
 	war_curr_state = START;
@@ -215,7 +217,7 @@ void start_saved_wargame()
 	game_destroy();
 
 	int turns = 0;
-    struct Hand *hands;
+    struct Hand **hands;
 	FILE *file = fopen(WAR_SAVE, "r");
 	if (file == NULL) {
 		printf("No save file found, or error opening file.\n\n");
@@ -230,10 +232,10 @@ void start_saved_wargame()
 	fclose(file);
 
 	game_init();
-	fill_linked_hand(cpu->hand, &hands[0]);
-	fill_linked_hand(player->hand, &hands[1]);
-    for (int i = 0; i < 2; i++)             /* Free the hand immediately, instead of in game_destroy() */
-        free_hand(&hands[i], 0);
+	fill_linked_hand(cpu->hand, hands[0]);
+	fill_linked_hand(player->hand, hands[1]);
+    for (int i = 0; i < 2; i++)
+        free_hand(hands[i], 1);
     free(hands);
 
 	nturns = turns;

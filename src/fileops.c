@@ -1,19 +1,18 @@
 #include "fileops.h"
 #include "carddefs.h"
 #include "cardutility.h"
+#include "structhelper.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-struct Hand * fopen_hand(FILE *file, int nhands)
+struct Hand ** fopen_hand(FILE *file, int nhands)
 {
-    struct Hand *hands;
-    struct Card *cards[nhands];
-    int ncards[nhands], counter[nhands];    /* Number of cards in each hand; counter for error-checking */
+    struct Hand **hands = malloc(nhands * sizeof(struct Hand *));
+    int ncards[nhands], count[nhands];    /* Number of cards in each hand; counter for error-checking */
     int card_val, c, is_hand = 0;
 
-    hands = malloc(nhands * sizeof(struct Hand));
     /* Go through each line until the newline */
     for (int i = 0; i < nhands; i++) {
         fscanf(file, "%3d", &ncards[i]);    /* Max # of cards = 999 */
@@ -21,37 +20,33 @@ struct Hand * fopen_hand(FILE *file, int nhands)
             is_hand = 1;
             ncards[i] = 0 - ncards[i];
         }
-        cards[i] = malloc(ncards[i] * sizeof(struct Card));
-        counter[i] = 0;
+        hands[i] = hand_create(ncards[i]);
+        count[i] = 0;
 
         while ((c = fgetc(file)) != '\n') {
             fscanf(file, "%3d", &card_val);
-            cards[i][counter[i]].number = card_val % 13 + 1;
-            cards[i][counter[i]].suit = card_val / 13 ;
-            counter[i]++;
+            hands[i]->cards[count[i]].number = card_val % 13 + 1;
+            hands[i]->cards[count[i]].suit = card_val / 13 ;
+            count[i]++;
+
+            if (ncards[i] < count[i]) {
+            	printf("Hey, no cheating.\n");
+            	exit(EXIT_FAILURE);
+            }
         }
-        if (ncards[i] != counter[i]) {
-        	printf("Hey, no cheating.\n");
-        	exit(EXIT_FAILURE);
-        }
-        hands[i].cards = cards[i];
-        hands[i].ncards = ncards[i];
 
         if (is_hand) {                      /* Read the next line if the saved hand was a Hand */
-            int *isplayed = malloc(ncards[i] * sizeof(int)), count2 = 0;
-            fscanf(file, "%1d", &isplayed[count2++]);
+            int count2 = 0;
+            fscanf(file, "%1d", &hands[i]->isplayed[count2++]);
 
-            while ((c = fgetc(file)) != '\n')
-                fscanf(file, "%1d", &isplayed[count2++]);
+            while ((c = fgetc(file)) != '\n') {
+            	fscanf(file, "%1d", &hands[i]->isplayed[count2++]);
 
-            if (ncards[i] != count2) {
-                printf("Hey, no cheating.\n");
-                exit(EXIT_FAILURE);
+            	if (ncards[i] < count2) {
+            		printf("Hey, no cheating.\n");
+            		exit(EXIT_FAILURE);
+            	}
             }
-            hands[i].isplayed = isplayed;
-        } else {
-            hands[i].isplayed = malloc(ncards[i] * sizeof(int));
-            memset(hands[i].isplayed, 0, ncards[i]);
         }
     }
     return hands;

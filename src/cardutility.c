@@ -2,6 +2,7 @@
 #include "carddefs.h"
 #include "structhelper.h"
 
+#include <stdlib.h>
 #include <time.h>
 #include <string.h>
 
@@ -66,6 +67,7 @@ struct Hand * gen_ordered_deck()
     for (int i = 0; i < 52; i++) {			/* Populate the deck */
         cards[i].number = i % 13 + 1;
         cards[i].suit = i / 13;
+        hand->isplayed[i] = 1;
     }
     return hand;
 }
@@ -254,21 +256,25 @@ void shuffle_hand(struct Hand *hand, int ntimes)
 	}
 }
 
-struct Hand * split_hand(struct Hand *hand, int nhands)
+struct Hand ** split_hand(struct Hand *hand, int nhands)
 {
-	struct Hand *hands = malloc(nhands * sizeof(struct Hand));		/* Remember to free this! */
-	int counter = 0;
+	struct Hand **split = malloc(nhands * sizeof(struct Hand *));	/* Remember to free this! */
+	int counter = 0, ncards;
 
 	for (int i = 0; i < nhands; i++) {
-		/* Assign to hand[i] an array of size 52 / nhands. Note that this
-		 * uses the cards/isplayed in the Hand parameter - no new memory is allocated
-         * EXCEPT for the array of Hands themselves. */
-		hands[i].cards = &hand->cards[52 / nhands * i];
-        hands[i].isplayed = &hand->isplayed[52 / nhands * i];
-		hands[i].ncards = 52 / nhands;
-		counter += hands[i].ncards;
-	}
-	hands[nhands - 1].ncards += 52 - counter;	    /* Adjust for possible remainder */
+		/* Compute ncards first */
+		if (i == nhands - 1)
+			ncards = hand->ncards - counter;		/* Adjust for possible remainder */
+		else
+			ncards = 52 / nhands;
 
-	return hands;
+		split[i] = hand_create(ncards);
+
+		for (int j = 0; j < ncards; j++) {
+			split[i]->cards[j] = hand->cards[j + counter];
+			split[i]->isplayed[j] = hand->isplayed[j + counter];
+		}
+		counter += ncards;
+	}
+	return split;
 }

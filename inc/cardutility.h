@@ -68,7 +68,8 @@ struct CardNode * linked_hand_remove(struct LinkedHand *hand, int index, int rem
 /* Shuffles the given hand ntimes times */
 void shuffle_hand(struct Hand *hand, int ntimes);
 
-/* Splits the hand (or deck) into the specified number of Hands (i.e. an array) */
-struct Hand * split_hand(struct Hand *hand, int nhands);
+/* Splits the hand (or deck) into the specified number of Hands (i.e. an array of
+ * Hand pointers). Must free() both the array and the returned hands (and members). */
+struct Hand ** split_hand(struct Hand *hand, int nhands);
 
 #endif /* CARDUTIL_H_ */

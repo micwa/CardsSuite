@@ -43,8 +43,8 @@ struct Hand * hand_create(int ncards)
 	struct Hand *hand = malloc(sizeof(struct Hand));
 	hand->ncards = ncards;
 	hand->cards = malloc(ncards * sizeof(struct Card));
-	hand->isplayed = malloc(ncards * sizeof(struct Card));
-	memset(hand->isplayed, 0, hand->ncards * sizeof(int));
+	hand->isplayed = malloc(ncards * sizeof(int));
+	memset(hand->isplayed, 0, ncards * sizeof(int));
 
 	return hand;
 }
