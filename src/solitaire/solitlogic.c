@@ -61,29 +61,29 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
 	}
 }
 
-int make_move(enum MoveType type, void *src, void *dest)
+int make_move(struct SolitMove *move)
 {
 	struct Card *card;
 	struct CardNode *node;
 
-	switch (type) {
+	switch (move->type) {
 		case FLIP_STOCK:					/* Do nothing, in case caller did not check is_valid_move() (which they should) */
 		case NONE:
 		case TBL_TO_FDTION:
 			return -1;
 		case WASTE_TO_TBL_EMPTY:			/* src = Card, dest = LinkedHand */
 		case WASTE_TO_TBL:
-			node = card_node_create((struct Card *)src, NULL);
-			linked_hand_add((struct LinkedHand *)dest, node);
+			node = card_node_create((struct Card *)move->src, NULL);
+			linked_hand_add((struct LinkedHand *)move->dest, node);
 			return 1;
 		case TBL_TO_TBL_EMPTY:				/* src = CardNode, dest = LinkedHand */
 		case TBL_TO_TBL:					/* Note: does NOT take care of removing node from pile */
-			linked_hand_add((struct LinkedHand *)dest, (struct CardNode *)src);
+			linked_hand_add((struct LinkedHand *)move->dest, (struct CardNode *)move->src);
 			return 1;
 		case WASTE_TO_FDTION:				/* src = Card, dest = Card */
 		case TBL_SINGLE_TO_FDTION:
-			card = (struct Card *)dest;
-			*card = *(struct Card *)src;	/* COPY the card, not the address */
+			card = (struct Card *)move->dest;
+			*card = *(struct Card *)move->src;	    /* Copy the CARD, not the address */
 			return 1;
 		default:
 			return 0;

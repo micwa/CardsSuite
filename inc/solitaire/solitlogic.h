@@ -9,14 +9,18 @@
  * Returns 0 if type is not a valid MoveType. */
 int is_valid_move(enum MoveType type, const struct Card *src, const struct Card *dest);
 
-/* Makes the specified move from src to dest using solitgame.c's stock_hand,
- * tbl_hand, and fdtion_hand. Makes the move regardless of whether it is a valid
- * solitaire move, and does ONLY that (i.e. does not remove nodes).
+/* Makes the specified move represented by the given move, and executes it regardless
+ * of whether it is a valid solitaire move, and does ONLY that (e.g. does not remove nodes).
  * This determines the correct type by looking at the MoveType.
- * Returns 1 if the move is successful, -1 if not, and 0 if invalid argument(s). */
-int make_move(enum MoveType type, void *src, void *dest);
+ * Returns 1 if the move is successful, -1 if not, and 0 if error. */
+int make_move(struct SolitMove *move);
 
 /* Returns 1 if the game is won (i.e. all foundation piles are filled), 0 if not */
 int solit_game_win(struct Card *fdtion[4]);
+
+/* Undoes the move represented by the given move (the opposite of make_move(), basically).
+ * Does not remove any nodes or change any indices.
+ * Returns 1 if the move is successful, -1 if not, and 0 if error. */
+int undo_move(struct SolitMove *move);
 
 #endif /* SOLITLLOGIC_H_ */
