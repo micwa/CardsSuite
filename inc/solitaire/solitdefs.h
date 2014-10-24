@@ -19,11 +19,11 @@ struct SolitMove {
 	int *num;								/* A number used to hold the col/row/whatever needs to be held */
 };
 
-/* A stack implemented as an array of SolitMove pointers with a fixed size */
+/* A stack implemented as an array of SolitMoves with a fixed size */
 struct SolitStack {
 	int size;
 	int curr_index;
-	struct SolitMove **elems;
+	struct SolitMove *elems;
 };
 
 #endif /* SOLITDEFS_H_ */
