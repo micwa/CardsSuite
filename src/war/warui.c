@@ -19,7 +19,6 @@
 void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, const struct Card *cards[2])
 {
 	const int NUM_FRAMES = 3;
-	extern char *g_card_encs[52];
 	int cpu_todraw, pl_todraw;				/* Number of cards to draw flipped over */
 	char *cpu_enc, *pl_enc;
 
@@ -94,7 +93,6 @@ static void getopt(int *option)
 /* Prints game statistics */
 static void print_stats()
 {
-	extern const char *WAR_STATS;
 	int cpu_wins = 0, cpu_losses = 0, p_wins = 0, p_losses = 0;
 	double cpu_perc = 0, p_perc = 0;
 	FILE *file = fopen(WAR_STATS, "r");
@@ -228,8 +226,6 @@ static void show_menu_lose()
 
 void show_war_menu()
 {
-	extern enum GameState war_curr_state;
-
 	switch (war_curr_state) {
 		case START: show_menu_start();	break;
 		case PAUSE: show_menu_pause(); 	break;

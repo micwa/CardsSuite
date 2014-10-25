@@ -17,10 +17,6 @@
 
 void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw_cols)
 {
-	extern struct Hand *g_stock_hand;
-	extern struct LinkedHand *g_tbl_hand[7];
-	extern struct Card *g_fdtion_top[4];
-	extern char *g_card_encs[52];
 	char *fdtion_encs[4] = { " ", " ", " ", " " };	/* Print spaces if no card on foundation pile */
 	int max_rows = 0;
 
@@ -95,7 +91,6 @@ static void getopt(int *option)
 /* Prints game statistics */
 static void print_stats()
 {
-	extern const char *SOLIT_STATS;
 	int wins = 0, losses = 0, score = 0;
 	FILE *file = fopen(SOLIT_STATS, "r");
 	if (file != NULL) {
@@ -185,8 +180,6 @@ static void show_menu_win()
 
 void show_solit_menu()
 {
-	extern enum GameState g_solit_curr_state;
-
 	switch (g_solit_curr_state) {
 		case START: show_menu_start();	break;
 		case PAUSE: show_menu_pause(); 	break;
