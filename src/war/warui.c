@@ -90,8 +90,7 @@ static void getopt(int *option)
 		;
 }
 
-/* Prints game statistics */
-static void print_stats()
+void print_war_stats()
 {
 	int cpu_wins = 0, cpu_losses = 0, p_wins = 0, p_losses = 0;
 	double cpu_perc = 0, p_perc = 0;
@@ -124,10 +123,13 @@ static void print_stats()
 	printf("  Player losses: %d\n", p_losses);
 	printf("  Player Win%%: %d%%\n\n",	(int)p_perc);
 	printf("------------------------------\n\n");
+
+	printf("Press <Enter> to continue...\n");
+	getchar();
 }
 
 /* Start menu */
-static void show_menu_start()
+static PTFV show_menu_start()
 {
 	int option = 0;
 
@@ -143,15 +145,15 @@ static void show_menu_start()
 	} while (option < 1 || option > 4);
 
 	switch (option){
-		case 1:	start_new_wargame(); 	break;
-		case 2: start_saved_wargame(); 	break;
-		case 3: print_stats(); show_war_menu();	break;
-		case 4: quit_wargame();			break;
+		case 1:	return &start_new_wargame;
+		case 2: return &start_saved_wargame;
+		case 3: return &print_war_stats;
+		case 4: return &quit_wargame;
 		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
-static void show_menu_pause()
+static PTFV show_menu_pause()
 {
 	int option = 0;
 
@@ -168,20 +170,20 @@ static void show_menu_pause()
 	} while (option < 1 || option > 5);
 
 	switch (option){
-		case 1:	resume_wargame();	 	break;
-		case 2: start_new_wargame(); 	break;
-		case 3: save_wargame();	show_war_menu(); 	break;
-		case 4: print_stats(); show_war_menu();		break;
-		case 5: quit_wargame();			break;
+		case 1:	return &resume_wargame;
+		case 2: return &start_new_wargame;
+		case 3: return &save_wargame;
+		case 4: return &print_war_stats;
+		case 5: return &quit_wargame;
 		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
-static void show_menu_win()
+static PTFV show_menu_win()
 {
 	int option = 0;
 
 	printf("\nCONGRATULATIONS on hacking your way to victory! ");
-	printf("If you did win legitimately, however, either a) you killed your Enter key or b) your computer does not know how to generate random numbers.");
+	printf("If you did win legitimately, however, either 1) you killed your Enter key or 2) your computer does not know how to generate random numbers.");
 	printf("\n\nPlay again?\n");
 	printf("    1. Start a new game\n");
 	printf("    2. Show statistics\n");
@@ -193,14 +195,14 @@ static void show_menu_win()
 	} while (option < 1 || option > 3);
 
 	switch (option){
-		case 1: start_new_wargame(); 	break;
-		case 2: print_stats(); show_war_menu();	break;
-		case 3: quit_wargame();			break;
+		case 1: return &start_new_wargame;
+		case 2: return &print_war_stats;
+		case 3: return &quit_wargame;
 		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
-static void show_menu_lose()
+static PTFV show_menu_lose()
 {
 	int option = 0;
 
@@ -217,19 +219,20 @@ static void show_menu_lose()
 	} while (option < 1 || option > 3);
 
 	switch (option){
-	case 1: start_new_wargame(); 	break;
-	case 2: print_stats(); show_war_menu();	break;
-	case 3: quit_wargame();			break;
-	default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
+		case 1: return &start_new_wargame;
+		case 2: return &print_war_stats;
+		case 3: return &quit_wargame;
+		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
-void show_war_menu()
+PTFV show_war_menu()
 {
 	switch (war_curr_state) {
-		case START: show_menu_start();	break;
-		case PAUSE: show_menu_pause(); 	break;
-		case WIN: 	show_menu_win();	break;
-		case LOSE: 	show_menu_lose();	break;
+		case START: return show_menu_start();
+		case PAUSE: return show_menu_pause();
+		case WIN: 	return show_menu_win();
+		case LOSE: 	return show_menu_lose();
+		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }

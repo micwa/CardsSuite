@@ -76,14 +76,28 @@ static void game_init()
     init_card_encs();
 }
 
-/* Set the current state to PAUSE and bring up the pause menu */
+/* Lose the game */
+static void lose_game()
+{
+	war_curr_state = LOSE;
+	fsave_stats();
+}
+
+/* Set the current state to PAUSE */
 static void pause_game()
 {
 	war_curr_state = PAUSE;
-	show_war_menu();
 }
 
-/* Start playing the game, assuming that hands are initialized */
+/* Win the game */
+static void win_game()
+{
+	war_curr_state = WIN;
+	fsave_stats();
+}
+
+/* Start playing the game, assuming that hands are initialized.
+ * Returns on pause_game(), win_game(), and lose_game(). */
 static void play_game()
 {
 	/* For comparing current cards, and storing previous ones for drawing.
@@ -99,10 +113,11 @@ static void play_game()
     	printf("CPU's cards: %d\n", cpu->hand->ncards);
     	printf("Your cards: %d\n\n", player->hand->ncards);
         printf("Press enter to turn over the next card (or p to pause):");
-        while ((c = getchar()) != '\n') {
-            if (c == 'p')
+        while ((c = getchar()) != '\n')
+            if (c == 'p') {
                 pause_game();
-        }
+                return;
+            }
         nturns++;
 
         ccur[0] = cpu->hand->node->card;
@@ -138,13 +153,12 @@ static void play_game()
 
         /* If somehow the player won or lost, save stats, show the appropriate menu */
         if (player->hand->ncards == 0) {
-        	war_curr_state = LOSE;
-        	fsave_stats();
-        	show_war_menu();
-        } else if (player->hand->ncards == 52) {
-        	war_curr_state = WIN;
-        	fsave_stats();
-        	show_war_menu();
+        	lose_game();
+        	return;							/* Not necessary, but for clarity */
+        }
+        else if (player->hand->ncards == 52) {
+        	win_game();
+        	return;
         }
     }
 }
@@ -161,7 +175,7 @@ void quit_wargame()
 void resume_wargame()
 {
 	war_curr_state = START;
-	play_game();							/* An alias for play_game(), essentially (at least for now) */
+	play_game();							/* Only function other than start_*_wargame() that should call play_game() */
 }
 
 void save_wargame()
@@ -217,7 +231,6 @@ void start_saved_wargame()
 	FILE *file = fopen(WAR_SAVE, "r");
 	if (file == NULL) {
 		printf("No save file found, or error opening file.\n\n");
-		show_war_menu();
 		return;
 	}
 	/* Get the turn number first */
@@ -241,5 +254,8 @@ void start_saved_wargame()
 
 void war()
 {
-	show_war_menu();
+	while (1) {								/* Infinite loop until quit_wargame() is called */
+		PTFV fptr = show_war_menu();
+		(*fptr)();
+	}
 }

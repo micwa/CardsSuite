@@ -21,7 +21,11 @@ void start_new_wargame();
 /* Starts a saved game */
 void start_saved_wargame();
 
-/* Launches war, i.e. this game */
+/* Lanches war, i.e. this game.
+ * So that the call stack doesn't grow huge, war() is the "base" function
+ * and should be the only one that calls show_war_menu(). It should loop to show
+ * the war menu any time a (called) function exits, so make sure the curr_state is
+ * set properly after the execution of each function. */
 void war();
 
 #endif /* WARGAME_H_ */
