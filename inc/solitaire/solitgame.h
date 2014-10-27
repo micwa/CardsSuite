@@ -10,7 +10,7 @@ extern struct Hand *g_stock_hand;
 extern struct LinkedHand *g_tbl_hand[7];
 extern struct Card *g_fdtion_top[4];
 
-/* Quits the game; also should call hands_destroy() */
+/* Quits the game; also should call game_destroy() */
 void quit_solitgame();
 
 /* Resumes the current game */

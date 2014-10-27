@@ -104,7 +104,13 @@ static void getopt(char *option)
 static void pause_game()
 {
 	g_solit_curr_state = PAUSE;
-	show_solit_menu();
+}
+
+/* Win the game */
+static void win_game()
+{
+	g_solit_curr_state = WIN;
+	fsave_stats();
 }
 
 /* Start playing the game, assuming that hands are initialized.
@@ -139,6 +145,8 @@ static void play_game()
         if (option == 'P') {
             curr_move->type = NONE;
             pause_game();
+            free(curr_move);
+            return;
         } else if (option == 's' && !stock_empty_flag) {
             curr_move->type = FLIP_STOCK;
             waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);		/* Get the next unplayed index, and show that card next */
@@ -265,10 +273,10 @@ error:
         
         /* On win game */
         if (solit_game_win(g_fdtion_top)) {
-        	g_solit_curr_state = WIN;
         	player->curr_score = nmoves;
-        	fsave_stats();
-        	show_solit_menu();
+        	win_game();
+        	free(curr_move);
+        	return;
         }
     }
     free(curr_move);
@@ -409,5 +417,8 @@ void start_saved_solitgame()
 
 void solitaire()
 {
-	show_solit_menu();
+	while (1) {								/* Infinite loop until quit_solitgame() is called */
+		PTFV fptr = show_solit_menu();
+		(*fptr)();
+	}
 }

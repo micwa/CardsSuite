@@ -103,10 +103,14 @@ static void print_stats()
 	printf("  Losses: %d\n", losses);
 	printf("  Lowest number of moves: %d\n", score);
 	printf("\n------------------------------\n\n");
+
+	printf("Press <Enter> to continue...\n");
+	while (getchar() != '\n')
+			;
 }
 
 /* Start menu */
-static void show_menu_start()
+static PTFV show_menu_start()
 {
 	int option = 0;
 
@@ -122,15 +126,15 @@ static void show_menu_start()
 	} while (option < 1 || option > 4);
 
 	switch (option){
-		case 1:	start_new_solitgame(); 		break;
-		case 2: start_saved_solitgame(); 	break;
-		case 3: print_stats(); show_solit_menu();	break;
-		case 4: quit_solitgame();			break;
+		case 1:	return &start_new_solitgame;
+		case 2: return &start_saved_solitgame;
+		case 3: return &print_stats;
+		case 4: return &quit_solitgame;
 		default: printf("I've been hacked"); exit(EXIT_FAILURE);
 	}
 }
 
-static void show_menu_pause()
+static PTFV show_menu_pause()
 {
 	int option = 0;
 
@@ -147,15 +151,15 @@ static void show_menu_pause()
 	} while (option < 1 || option > 5);
 
 	switch (option){
-		case 1:	resume_solitgame();	 	break;
-		case 2: start_new_solitgame(); 	break;
-		case 3: save_solitgame(); show_solit_menu(); 	break;
-		case 4: print_stats(); show_solit_menu();		break;
-		case 5: quit_solitgame();		break;
+		case 1:	return &resume_solitgame;
+		case 2: return &start_new_solitgame;
+		case 3: return &save_solitgame;
+		case 4: return &print_stats;
+		case 5: return &quit_solitgame;
 		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
-static void show_menu_win()
+static PTFV show_menu_win()
 {
 	int option = 0;
 
@@ -171,19 +175,19 @@ static void show_menu_win()
 	} while (option < 1 || option > 3);
 
 	switch (option){
-		case 1: start_new_solitgame(); 	break;
-		case 2: print_stats(); show_solit_menu();	break;
-		case 3: quit_solitgame();		break;
+		case 1: return &start_new_solitgame;
+		case 2: return &print_stats;
+		case 3: return &quit_solitgame;
 		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
 
-void show_solit_menu()
+PTFV show_solit_menu()
 {
 	switch (g_solit_curr_state) {
-		case START: show_menu_start();	break;
-		case PAUSE: show_menu_pause(); 	break;
-		case WIN: 	show_menu_win();	break;
-		case LOSE: 	printf("You can't lose this game\n"); exit(EXIT_FAILURE);
+		case START: return show_menu_start();
+		case PAUSE: return show_menu_pause();
+		case WIN: 	return show_menu_win();
+		default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
 	}
 }
