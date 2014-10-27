@@ -187,6 +187,9 @@ static void play_game()
              * To move many cards, select a row AND THEN a column */
         	struct CardNode *node;
             col = option - '1';
+            if (tbl_first[col] < 0)			/* Error if no cards in pile */
+            	goto error;
+
             draw_solit_board(waste_index, tbl_first, 1, 1);
             printf("Select a column, foundation pile, or row: ");
             getopt(&option);
