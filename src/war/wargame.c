@@ -13,7 +13,7 @@
 
 const char *WAR_STATS = "war.stats";
 const char *WAR_SAVE = "war.deck";
-enum GameState war_curr_state = START;
+enum GameState g_war_curr_state = START;
 
 static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };	    /* The played cards */
@@ -79,20 +79,20 @@ static void game_init()
 /* Lose the game */
 static void lose_game()
 {
-	war_curr_state = LOSE;
+	g_war_curr_state = LOSE;
 	fsave_stats();
 }
 
 /* Set the current state to PAUSE */
 static void pause_game()
 {
-	war_curr_state = PAUSE;
+	g_war_curr_state = PAUSE;
 }
 
 /* Win the game */
 static void win_game()
 {
-	war_curr_state = WIN;
+	g_war_curr_state = WIN;
 	fsave_stats();
 }
 
@@ -105,7 +105,7 @@ static void play_game()
 	struct CardNode *temp;
     int c;
     
-    while (war_curr_state == START) {
+    while (g_war_curr_state == START) {
     	draw_war_board(player, cpu, (const struct Card **)ccur);	/* Since setting of ccur[] is after this */
 
         /* Prompt user to press enter, and skip over all input */
@@ -174,7 +174,7 @@ void quit_wargame()
 
 void resume_wargame()
 {
-	war_curr_state = START;
+	g_war_curr_state = START;
 	play_game();							/* Only function other than start_*_wargame() that should call play_game() */
 }
 
@@ -218,7 +218,7 @@ void start_new_wargame()
     free(split);
     
 	nturns = 0;
-	war_curr_state = START;
+	g_war_curr_state = START;
     play_game();
 }
 
@@ -248,7 +248,7 @@ void start_saved_wargame()
     free(hands);
 
 	nturns = turns;
-	war_curr_state = START;
+	g_war_curr_state = START;
 	play_game();
 }
 

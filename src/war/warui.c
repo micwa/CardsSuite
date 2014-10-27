@@ -102,12 +102,16 @@ void print_war_stats()
 		fscanf(file, "%9d %9d", &p_wins, &p_losses);
 
 		/* Percentage-calculating time! */
-		if (cpu_wins > 0 && cpu_losses == 0)
+		if (cpu_wins == 0 && cpu_losses == 0)
+			cpu_perc = 0;
+		else if (cpu_wins > 0 && cpu_losses == 0)
 			cpu_perc = 100;
 		else
 			cpu_perc = cpu_wins * 100.0 / (cpu_wins + cpu_losses);
 
-		if (p_wins > 0 && p_losses == 0)
+		if (p_wins == 0 && p_losses == 0)
+			p_perc = 0;
+		else if (p_wins > 0 && p_losses == 0)
 			p_perc = 100;
 		else
 			p_perc = p_wins * 100.0 / (p_wins + p_losses);
@@ -125,7 +129,8 @@ void print_war_stats()
 	printf("------------------------------\n\n");
 
 	printf("Press <Enter> to continue...\n");
-	getchar();
+	while (getchar() != '\n')
+		;
 }
 
 /* Start menu */
@@ -228,7 +233,7 @@ static PTFV show_menu_lose()
 
 PTFV show_war_menu()
 {
-	switch (war_curr_state) {
+	switch (g_war_curr_state) {
 		case START: return show_menu_start();
 		case PAUSE: return show_menu_pause();
 		case WIN: 	return show_menu_win();
