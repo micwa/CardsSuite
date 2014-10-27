@@ -96,6 +96,10 @@ char * get_card_encoding(const struct Card *card)
 	strcpy(enc, CARD_UTF_PREFIX);
 	strcat(enc, CARD_SUFFIXES[card->suit]);
 	enc[3] += card->number - 1;				/* Some character addition */
+	if (card->number == 13)					/* Switching the "Q" (king) and "C" (queen) cards */
+		enc[3]--;
+	else if (card->number == 12)
+		enc[3]++;
 
 	return enc;
 }

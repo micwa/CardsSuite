@@ -16,12 +16,12 @@ struct SolitMove {
 	enum MoveType type;
 	void *src;								/* Source and destination */
 	void *dest;
-	int *num;								/* A number used to hold the col/row/whatever needs to be held */
+	int num;								/* A number used to hold the col/row/whatever needs to be held */
 };
 
 /* A stack implemented as an array of SolitMoves with a fixed size */
 struct SolitStack {
-	int size;
+	int size, nelems;						/* Size is the total capacity; nelems is the current number of elements */
 	int curr_index;
 	struct SolitMove *elems;
 };

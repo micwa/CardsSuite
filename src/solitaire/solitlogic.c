@@ -10,8 +10,8 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
 {
 	switch (type) {							/* Early cases that disregard src and/or dest */
 		case FLIP_STOCK:
-		case NONE:
 			return 1;
+		case NONE:
 		case TBL_TO_FDTION:
 			return -1;
 		case WASTE_TO_TBL_EMPTY:

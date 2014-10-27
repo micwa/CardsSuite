@@ -2,6 +2,7 @@
 #include "solitdefs.h"
 #include "solitui.h"
 #include "solitlogic.h"
+#include "solitstack.h"
 #include "carddefs.h"
 #include "gamedefs.h"
 #include "cardutility.h"
@@ -12,8 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SHUFFLE_AMOUNT 1000
 #define NCARDS_STOCK 24
+#define SHUFFLE_AMOUNT 1000
+#define STACK_SIZE 10
 
 const char *SOLIT_STATS = "solit.stats";
 const char *SOLIT_SAVE = "solit.deck";
@@ -25,6 +27,7 @@ struct Card *g_fdtion_top[4] = { NULL };   	/* No point in creating an array/oth
 /* tbl_first[i] is the index of the first card in tbl_hand[i] to be drawn face up, where [0] = card 1, etc.
  * tbl_first[i] must be in the range (0...ncards-1), unless it equals -1, in which case all cards are face down */
 static int tbl_first[7];
+static struct SolitStack *move_stack;
 static struct Player *player = NULL;        /* Used ONLY for tracking stats */
 static int nmoves = 0;						/* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
@@ -90,6 +93,7 @@ static void game_init()
     	g_fdtion_top[i]->number = -1;		/* Set illogical values */
     	g_fdtion_top[i]->suit = -1;
     }
+    move_stack = stack_create(STACK_SIZE);
     init_card_encs();
 }
 
@@ -119,7 +123,7 @@ static void play_game()
 {
     char option;
     int max_rows = 0, error_flag = 0, stock_empty_flag = 0;
-    int col, col2, row;						/* The src/dest columns, when needed; row is only for TBL_TO_TBL */
+    int col_from, col_to, row;						/* The src/dest columns, when needed; row is only for TBL_TO_TBL */
     struct SolitMove *curr_move = malloc(sizeof(struct SolitMove));
     struct Card *card_src = NULL, *card_dest = NULL;
 
@@ -147,12 +151,12 @@ static void play_game()
             pause_game();
             free(curr_move);
             return;
+        } else if (option == 'u') {
+        	/* Pop the last move off the stack, call undo_move(), and change the indices/
+        	 * remove the nodes as appropriate */
         } else if (option == 's' && !stock_empty_flag) {
             curr_move->type = FLIP_STOCK;
-            waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);		/* Get the next unplayed index, and show that card next */
-
-            if (waste_index == -1 && nmoves > 0)    /* Set stock_empty flag if waste_index is -1, and more than one move's been made */
-                stock_empty_flag = 1;
+            curr_move->num = waste_index;
         } else if (option == 't') {
             /* First, check if the waste_index is valid. Then possibles moves from here are:
              * move to tableau, tableau_empty, or a foundation pile */
@@ -167,27 +171,29 @@ static void play_game()
             		curr_move->type = WASTE_TO_TBL_EMPTY;
             	else
             		curr_move->type = WASTE_TO_TBL;
-            	col = option - '1';
+            	col_to = option - '1';
             	card_src = &g_stock_hand->cards[waste_index];
             	card_dest = linked_hand_get_card(g_tbl_hand[option - '1'],	/* May be NULL */
-            			g_tbl_hand[col]->ncards - 1);
+            			g_tbl_hand[col_to]->ncards - 1);
             	curr_move->src = (void *) card_src;
-            	curr_move->dest = (void *) g_tbl_hand[col];
+            	curr_move->dest = (void *) g_tbl_hand[col_to];
+            	curr_move->num = waste_index;
             } else if (option >= 'w' && option <= 'z') {
-            	col = option - 'w';
+            	col_to = option - 'w';
             	curr_move->type = WASTE_TO_FDTION;
             	card_src = &g_stock_hand->cards[waste_index];
-            	card_dest = g_fdtion_top[col];
+            	card_dest = g_fdtion_top[col_to];
             	curr_move->src = (void *) card_src;
-            	curr_move->dest = (void *) g_fdtion_top[col];
+            	curr_move->dest = (void *) g_fdtion_top[col_to];
+            	curr_move->num = waste_index;
             } else
             	goto error;
         } else if (option >= '1' && option <= '7') {
             /* To move a single card, select a column (1-7) or a foundation pile (w, x, y, z).
              * To move many cards, select a row AND THEN a column */
         	struct CardNode *node;
-            col = option - '1';
-            if (tbl_first[col] < 0)			/* Error if no cards in pile */
+            col_from = option - '1';
+            if (tbl_first[col_from] < 0)	/* Error if no cards in pile */
             	goto error;
 
             draw_solit_board(waste_index, tbl_first, 1, 1);
@@ -196,33 +202,36 @@ static void play_game()
             row = option - 'a';				/* Only used when moving multiple cards */
 
             if (option >= 'w' && option <= 'z') {
-            	row = g_tbl_hand[col]->ncards - 1;
+            	col_to = option - 'w';
+            	row = g_tbl_hand[col_from]->ncards - 1;
                 curr_move->type = TBL_SINGLE_TO_FDTION;
-                card_src = linked_hand_get_card(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1);
-                card_dest = g_fdtion_top[option - 'w'];
+                card_src = linked_hand_get_card(g_tbl_hand[col_from], g_tbl_hand[col_from]->ncards - 1);
+                card_dest = g_fdtion_top[col_to];
                 curr_move->src = (void *) card_src;
-                curr_move->dest = (void *) g_fdtion_top[option - 'w'];
+                curr_move->dest = (void *) g_fdtion_top[col_to];
+                curr_move->num = -1;		/* Not necessary here */
             } else {
             	/* Prompt for column if alphabet character was typed */
-            	if (row >= tbl_first[col] && row < g_tbl_hand[col]->ncards) {
+            	if (row >= tbl_first[col_from] && row < g_tbl_hand[col_from]->ncards) {
 					draw_solit_board(waste_index, tbl_first, 0, 1);
 					printf("Select a column: ");
 					getopt(&option);
-            	} else
-            		row = g_tbl_hand[col]->ncards - 1;		/* Set the proper row */
-            	/* TBL_SINGLE and TBL_MANY are handled the same way */
+            	} else		/* Set the proper row (last one) */
+            		row = g_tbl_hand[col_from]->ncards - 1;
+            	/* TBL_SINGLE and TBL (many) are handled the same way */
             	if (option >= '1' && option <= '7') {
-            		col2 = option - '1';
-            		if (g_tbl_hand[col2]->ncards == 0)
+            		col_to = option - '1';
+            		if (g_tbl_hand[col_to]->ncards == 0)
             			curr_move->type = TBL_TO_TBL_EMPTY;
             		else
             			curr_move->type = TBL_TO_TBL;
 
-            		card_src = linked_hand_get_card(g_tbl_hand[col], row);
-            		card_dest = linked_hand_get_card(g_tbl_hand[col2], g_tbl_hand[col2]->ncards - 1);
-            		node = linked_hand_get_node(g_tbl_hand[col], row);
+            		card_src = linked_hand_get_card(g_tbl_hand[col_from], row);
+            		card_dest = linked_hand_get_card(g_tbl_hand[col_to], g_tbl_hand[col_to]->ncards - 1);
+            		node = linked_hand_get_node(g_tbl_hand[col_from], row);
             		curr_move->src = (void *) node;
-            		curr_move->dest = (void *) g_tbl_hand[col2];
+            		curr_move->dest = (void *) g_tbl_hand[col_to];
+            		curr_move->num = g_tbl_hand[col_from]->ncards - row;	/* Number of cards moved */
             	} else
             		goto error;
             }
@@ -232,39 +241,44 @@ error:
             continue;
         }
 
-        /* Now making the move, and removing nodes, etc. */
+        /* Now make the move, push it onto the stack, and do ALL the processing here
+         * (i.e. removing nodes, changing waste_index/tbl_first[i]) */
         if (is_valid_move(curr_move->type, card_src, card_dest) == 1) {
         	make_move(curr_move);
+        	stack_push(move_stack, curr_move);
 
         	switch (curr_move->type) {
         		struct CardNode *tofree;
 
-        		case WASTE_TO_TBL_EMPTY:	/* Only case where col = destination column */
-        			tbl_first[col] = 0;		/* Set to 0 since the pile now has one card */
+        		case WASTE_TO_TBL_EMPTY:
+        			tbl_first[col_to] = 0;	/* Set to 0 since the pile now has one card */
         		case WASTE_TO_TBL:
         		case WASTE_TO_FDTION:
         			g_stock_hand->isplayed[waste_index] = 1;
         			waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);
         			break;
         		case TBL_TO_TBL_EMPTY:
-        			tbl_first[col2] = 0;
+        			tbl_first[col_to] = 0;
         		case TBL_TO_TBL:
         			/* If the resulting amount of cards - 1 is less than the previous tbl_first[i],
         			 * then set to the last card (essentially flip it over). */
-        			linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
-        			if (g_tbl_hand[col]->ncards <= tbl_first[col])
-        				tbl_first[col] = g_tbl_hand[col]->ncards - 1;
+        			linked_hand_remove(g_tbl_hand[col_from], g_tbl_hand[col_from]->ncards - 1, 1);
+        			if (g_tbl_hand[col_from]->ncards <= tbl_first[col_from])
+        				tbl_first[col_from] = g_tbl_hand[col_from]->ncards - 1;
         			break;
         		case TBL_SINGLE_TO_FDTION:
-        			tofree = linked_hand_remove(g_tbl_hand[col], g_tbl_hand[col]->ncards - 1, 1);
+        			tofree = linked_hand_remove(g_tbl_hand[col_from], g_tbl_hand[col_from]->ncards - 1, 1);
         			free(tofree->card);
         			free(tofree);
-        			if (g_tbl_hand[col]->ncards <= tbl_first[col])
-        				tbl_first[col] = g_tbl_hand[col]->ncards - 1;
+        			if (g_tbl_hand[col_from]->ncards <= tbl_first[col_from])
+        				tbl_first[col_from] = g_tbl_hand[col_from]->ncards - 1;
         			break;
-        		case FLIP_STOCK:			/* Don't need to do anything */
+        		case FLIP_STOCK:
+        			waste_index = get_next_unplayed(g_stock_hand, waste_index + 1, 1);		/* Get the next unplayed index, and show that card next */
+        			if (waste_index == -1)    		/* Set stock_empty flag if no more cards in stock */
+        				stock_empty_flag = 1;
+        			break;
         		case NONE:
-        			break;
         		case TBL_TO_FDTION:
         		default:
         			printf("Not even possible.\n");
