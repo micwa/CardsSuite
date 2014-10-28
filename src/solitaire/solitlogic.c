@@ -90,7 +90,7 @@ int make_move(struct SolitMove *move)
 	}
 }
 
-int solit_game_win(struct Card *fdtion[4])
+int solit_game_win(const struct Card *fdtion[4])
 {
 	for (int i = 0; i < 4; i++)
 		if (fdtion[i] != NULL) {			/* Shouldn't be NULL in the first place */
@@ -100,4 +100,31 @@ int solit_game_win(struct Card *fdtion[4])
 			return 0;
 
 	return 1;
+}
+
+void * undo_move(struct SolitMove *move)
+{
+	struct Card *card;
+	struct LinkedHand *lhand;
+
+	switch (move->type) {
+		case WASTE_TO_TBL_EMPTY:			/* src = Card, dest = LinkedHand */
+		case WASTE_TO_TBL:
+			lhand = (struct LinkedHand *)move->dest;
+			return (void *)linked_hand_remove(lhand, lhand->ncards - 1, 1);
+		case TBL_TO_TBL_EMPTY:				/* src = CardNode, dest = LinkedHand */
+		case TBL_TO_TBL:
+			lhand = (struct LinkedHand *)move->dest;
+			return (void *)linked_hand_remove(lhand, lhand->ncards - move->num % 100, 1);
+		case WASTE_TO_FDTION:				/* src = Card, dest = Card */
+		case TBL_SINGLE_TO_FDTION:
+			card = (struct Card *)move->dest;
+			card->number--;
+			return (void *)card;
+		case FLIP_STOCK:					/* Caller should take care of reverting the waste index */
+		case NONE:							/* Do nothing */
+		case TBL_TO_FDTION:
+		default:
+			return NULL;
+	}
 }

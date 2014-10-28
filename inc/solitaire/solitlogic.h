@@ -16,11 +16,11 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
 int make_move(struct SolitMove *move);
 
 /* Returns 1 if the game is won (i.e. all foundation piles are filled), 0 if not */
-int solit_game_win(struct Card *fdtion[4]);
+int solit_game_win(const struct Card *fdtion[4]);
 
 /* Undoes the move represented by the given move (the opposite of make_move(), basically).
  * Does not remove any nodes or change any indices.
- * Returns 1 if the move is successful, -1 if not, and 0 if error. */
-int undo_move(struct SolitMove *move);
+ * Returns a void pointer to whatever it removes (if anything) and NULL otherwise. */
+void * undo_move(struct SolitMove *move);
 
 #endif /* SOLITLLOGIC_H_ */
