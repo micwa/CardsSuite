@@ -25,14 +25,14 @@ struct Hand {
 
 /* Wraps a Card in a linked list node */
 struct CardNode {
-	struct CardNode *next;
-	struct Card *card;
+    struct CardNode *next;
+    struct Card *card;
 };
 
 /* A linked list, with ncards keeping track of the number of cards */
 struct LinkedHand {
-	int ncards;
-	struct CardNode *node;
+    int ncards;
+    struct CardNode *node;
 };
 
 #endif /* CARDDEFS_H_ */

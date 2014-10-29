@@ -19,7 +19,7 @@ static int is_encs_init = 0;
 
 int cards_played(const struct Hand *hand)
 {
-	int count = 0;
+    int count = 0;
     for (int i = 0; i < hand->ncards; i++)
         if (hand->isplayed[i] == 1)
             count++;
@@ -28,33 +28,33 @@ int cards_played(const struct Hand *hand)
 
 int card_compare(const struct Card *c1, const struct Card *c2)
 {
-	if (c1->number < c2->number)
-		return -1;
-	else if (c1->number > c2->number)
-		return 1;
-	else
-		return (c1->suit == c2->suit) ? 0 : c1->suit - c2->suit;
+    if (c1->number < c2->number)
+        return -1;
+    else if (c1->number > c2->number)
+        return 1;
+    else
+        return (c1->suit == c2->suit) ? 0 : c1->suit - c2->suit;
 }
 
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
 {
-	struct CardNode *prev, *curr;
+    struct CardNode *prev, *curr;
 
-	/* If l_hand->node exists, overwrites it */
+    /* If l_hand->node exists, overwrites it */
     l_hand->node = card_node_create(&hand->cards[0], NULL);
     prev = l_hand->node;
 
-	for (int i = 1; i < hand->ncards; i++) {
-		curr = card_node_create(&hand->cards[i], NULL);
-		prev->next = curr;
-		prev = curr;
-	}
-	l_hand->ncards = hand->ncards;
+    for (int i = 1; i < hand->ncards; i++) {
+        curr = card_node_create(&hand->cards[i], NULL);
+        prev->next = curr;
+        prev = curr;
+    }
+    l_hand->ncards = hand->ncards;
 }
 
 void free_card_encs()
 {
-	if (is_encs_init) {                     /* Keep track of initialization here (in cardutil) */
+    if (is_encs_init) {                     /* Keep track of initialization here (in cardutil) */
         for (int i = 0; i < 52; i++)
             free(g_card_encs[i]);
         is_encs_init = 0;
@@ -63,10 +63,10 @@ void free_card_encs()
 
 struct Hand * gen_ordered_deck()
 {
-    struct Hand *hand = hand_create(52);	/* Remember to free() this (as with all other *_create() functions) */
+    struct Hand *hand = hand_create(52);    /* Remember to free() this (as with all other *_create() functions) */
     struct Card *cards = hand->cards;
 
-    for (int i = 0; i < 52; i++) {			/* Populate the deck */
+    for (int i = 0; i < 52; i++) {          /* Populate the deck */
         cards[i].number = i % 13 + 1;
         cards[i].suit = i / 13;
     }
@@ -79,10 +79,10 @@ struct Card gen_random_card()
     struct Card card;
 
     if (!is_rand_init) {
-    	srand(time(NULL));
-    	is_rand_init = 1;
+        srand(time(NULL));
+        is_rand_init = 1;
     }
-    num = rand() % 13 + 1;					/* Must be in between 1 and 13 */
+    num = rand() % 13 + 1;                  /* Must be in between 1 and 13 */
     suit = rand() / 13;
     card.number = num;
     card.suit = suit;
@@ -92,16 +92,16 @@ struct Card gen_random_card()
 
 char * get_card_encoding(const struct Card *card)
 {
-	char *enc = malloc(5 * sizeof(char));
-	strcpy(enc, CARD_UTF_PREFIX);
-	strcat(enc, CARD_SUFFIXES[card->suit]);
-	enc[3] += card->number - 1;				/* Some character addition */
-	if (card->number == 13)					/* Switching the "Q" (king) and "C" (queen) cards */
-		enc[3]--;
-	else if (card->number == 12)
-		enc[3]++;
+    char *enc = malloc(5 * sizeof(char));
+    strcpy(enc, CARD_UTF_PREFIX);
+    strcat(enc, CARD_SUFFIXES[card->suit]);
+    enc[3] += card->number - 1;             /* Some character addition */
+    if (card->number == 13)                 /* Switching the "Q" (king) and "C" (queen) cards */
+        enc[3]--;
+    else if (card->number == 12)
+        enc[3]++;
 
-	return enc;
+    return enc;
 }
 
 /* Note: if there is an error, this function returns a null string. */
@@ -110,15 +110,15 @@ char * get_card_name(const struct Card *card)
     char *name = malloc(20 * sizeof(char));
     switch (card->number) {
         case 1: strcpy(name, "Ace");    break;
-        case 2: strcpy(name, "2");    	break;
-        case 3: strcpy(name, "3");  	break;
-        case 4: strcpy(name, "4");   	break;
-        case 5: strcpy(name, "5");   	break;
-        case 6: strcpy(name, "6");    	break;
-        case 7: strcpy(name, "7");  	break;
-        case 8: strcpy(name, "8");  	break;
-        case 9: strcpy(name, "9");  	break;
-        case 10: strcpy(name, "10");   	break;
+        case 2: strcpy(name, "2");        break;
+        case 3: strcpy(name, "3");      break;
+        case 4: strcpy(name, "4");       break;
+        case 5: strcpy(name, "5");       break;
+        case 6: strcpy(name, "6");        break;
+        case 7: strcpy(name, "7");      break;
+        case 8: strcpy(name, "8");      break;
+        case 9: strcpy(name, "9");      break;
+        case 10: strcpy(name, "10");       break;
         case 11: strcpy(name, "Jack");  break;
         case 12: strcpy(name, "Queen"); break;
         case 13: strcpy(name, "King");  break;
@@ -138,31 +138,31 @@ int get_card_value(const struct Card *card)
 {
     int value = 0;
     value += card->number - 1;
-    value += card->suit * 13;				/* Clubs are 0-12, Diamonds are 13-25, etc. */
+    value += card->suit * 13;               /* Clubs are 0-12, Diamonds are 13-25, etc. */
 
     return value;
 }
 
 int get_next_unplayed(struct Hand *hand, int index, int do_loop)
 {
-	if (index < 0)							/* Set to 0 for invalid indices (whether intended or not) */
-		index = 0;
+    if (index < 0)                          /* Set to 0 for invalid indices (whether intended or not) */
+        index = 0;
 
-	for (int i = index; i < hand->ncards; i++)
-		if (hand->isplayed[i] == 0)
-			return i;
+    for (int i = index; i < hand->ncards; i++)
+        if (hand->isplayed[i] == 0)
+            return i;
 
-	if (do_loop)							/* Looping from 0 to index - 1 */
-		for (int i = 0; i < index; i++)
-			if (hand->isplayed[i] == 0)
-				return i;
-	return -1;
+    if (do_loop)                            /* Looping from 0 to index - 1 */
+        for (int i = 0; i < index; i++)
+            if (hand->isplayed[i] == 0)
+                return i;
+    return -1;
 }
 
 void init_card_encs()
 {
     if (!is_encs_init) {
-        struct Hand *hand = gen_ordered_deck();	    /* Do this because get_card_encoding doesn't accept ints */
+        struct Hand *hand = gen_ordered_deck();     /* Do this because get_card_encoding doesn't accept ints */
         for (int i = 0; i < 52; i++)
             g_card_encs[i] = get_card_encoding(&hand->cards[i]);
 
@@ -173,116 +173,116 @@ void init_card_encs()
 
 void linked_hand_add(struct LinkedHand *hand, struct CardNode *node)
 {
-	struct CardNode *base = hand->node;
+    struct CardNode *base = hand->node;
 
-	if (base != NULL) {						/* First check if base is not NULL to begin with */
-		while (base->next != NULL)
-			base = base->next;
-		base->next = node;
-	} else
-		hand->node = node;
+    if (base != NULL) {                     /* First check if base is not NULL to begin with */
+        while (base->next != NULL)
+            base = base->next;
+        base->next = node;
+    } else
+        hand->node = node;
 
-	hand->ncards++;
-	base = node;
-	for (; base->next != NULL; base = base->next)	/* If the node has a next node itself */
-		hand->ncards++;
+    hand->ncards++;
+    base = node;
+    for (; base->next != NULL; base = base->next)   /* If the node has a next node itself */
+        hand->ncards++;
 }
 
 struct Card * linked_hand_get_card(struct LinkedHand *hand, int index)
 {
-	if (index >= hand->ncards || index < 0)
-		return NULL;
+    if (index >= hand->ncards || index < 0)
+        return NULL;
 
-	struct CardNode *base = hand->node;
-	for (int i = 0; i < index; i++)
-		base = base->next;
+    struct CardNode *base = hand->node;
+    for (int i = 0; i < index; i++)
+        base = base->next;
 
-	return base->card;
+    return base->card;
 }
 
 struct CardNode * linked_hand_get_node(struct LinkedHand *hand, int index)
 {
-	if (index >= hand->ncards || index < 0)
-		return NULL;
+    if (index >= hand->ncards || index < 0)
+        return NULL;
 
-	struct CardNode *base = hand->node;
-	for (int i = 0; i < index; i++)
-		base = base->next;
+    struct CardNode *base = hand->node;
+    for (int i = 0; i < index; i++)
+        base = base->next;
 
-	return base;
+    return base;
 }
 
 struct CardNode * linked_hand_remove(struct LinkedHand *hand, int index, int remove_all)
 {
-	if (index == 0) {						/* Must change the value of the head pointer itself */
-		struct CardNode *ret = hand->node;
+    if (index == 0) {                       /* Must change the value of the head pointer itself */
+        struct CardNode *ret = hand->node;
 
-		if (remove_all) {
-			hand->node = NULL;
-			hand->ncards = 0;
-		} else {
-			hand->node = hand->node->next;
-			hand->ncards--;
-		}
-		return ret;
-	} else {
-		struct CardNode *prev, *curr = hand->node;
+        if (remove_all) {
+            hand->node = NULL;
+            hand->ncards = 0;
+        } else {
+            hand->node = hand->node->next;
+            hand->ncards--;
+        }
+        return ret;
+    } else {
+        struct CardNode *prev, *curr = hand->node;
 
-		for (int i = 0; i < index; i++) {
-			prev = curr;
-			curr = curr->next;
-		}
-		if (remove_all) {
-			prev->next = NULL;
-			hand->ncards = index;
-		} else {
-			prev->next = curr->next;			/* Assume that the end node is always NULL, so don't need to check for ncards - 1 case */
-			hand->ncards--;
-		}
-		return curr;
-	}
+        for (int i = 0; i < index; i++) {
+            prev = curr;
+            curr = curr->next;
+        }
+        if (remove_all) {
+            prev->next = NULL;
+            hand->ncards = index;
+        } else {
+            prev->next = curr->next;        /* Assume that the end node is always NULL, so don't need to check for ncards - 1 case */
+            hand->ncards--;
+        }
+        return curr;
+    }
 }
 
 void shuffle_hand(struct Hand *hand, int ntimes)
 {
-	int swap1, swap2, ncards = hand->ncards;
-	struct Card temp, *cards = hand->cards;
+    int swap1, swap2, ncards = hand->ncards;
+    struct Card temp, *cards = hand->cards;
 
-	if (!is_rand_init) {
-		srand(time(NULL));
-		is_rand_init = 1;
-	}
-	for (int i = 0; i < ntimes; i++) {
-		swap1 = rand() % ncards;			/* Thankfully, we have ncards */
-		do {
-			swap2 = rand() % ncards;
-		} while (swap1 == swap2);
+    if (!is_rand_init) {
+        srand(time(NULL));
+        is_rand_init = 1;
+    }
+    for (int i = 0; i < ntimes; i++) {
+        swap1 = rand() % ncards;            /* Thankfully, we have ncards */
+        do {
+            swap2 = rand() % ncards;
+        } while (swap1 == swap2);
 
-		temp = cards[swap1];
-		cards[swap1] = cards[swap2];
-		cards[swap2] = temp;
-	}
+        temp = cards[swap1];
+        cards[swap1] = cards[swap2];
+        cards[swap2] = temp;
+    }
 }
 
 struct Hand ** split_hand(struct Hand *hand, int nhands)
 {
-	struct Hand **split = malloc(nhands * sizeof(struct Hand *));	/* Remember to free this! */
-	int counter = 0, ncards;
+    struct Hand **split = malloc(nhands * sizeof(struct Hand *));   /* Remember to free this! */
+    int counter = 0, ncards;
 
-	for (int i = 0; i < nhands; i++) {
-		/* Compute ncards first */
-		if (i == nhands - 1)
-			ncards = hand->ncards - counter;		/* Adjust for possible remainder */
-		else
-			ncards = 52 / nhands;
+    for (int i = 0; i < nhands; i++) {
+        /* Compute ncards first */
+        if (i == nhands - 1)
+            ncards = hand->ncards - counter;        /* Adjust for possible remainder */
+        else
+            ncards = 52 / nhands;
 
-		split[i] = hand_create(ncards);
+        split[i] = hand_create(ncards);
 
-		for (int j = 0; j < ncards; j++) {
-			split[i]->cards[j] = hand->cards[j + counter];
-			split[i]->isplayed[j] = hand->isplayed[j + counter];
-		}
-		counter += ncards;
-	}
-	return split;
+        for (int j = 0; j < ncards; j++) {
+            split[i]->cards[j] = hand->cards[j + counter];
+            split[i]->isplayed[j] = hand->isplayed[j + counter];
+        }
+        counter += ncards;
+    }
+    return split;
 }

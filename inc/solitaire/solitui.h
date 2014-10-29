@@ -1,7 +1,7 @@
 #ifndef SOLITUI_H_
 #define SOLITUI_H_
 
-typedef void (*PTFV)();						/* A pointer to a function taking zero arguments and returning void */
+typedef void (*PTFV)();                     /* A pointer to a function taking zero arguments and returning void */
 
 /* Draws the stock/waste, the foundation, and the tableau cards; alphabet characters
  * represent rows, numbers = columns, "s" = flipping stock, "t" = move card from waste,

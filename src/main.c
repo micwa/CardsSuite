@@ -41,24 +41,24 @@ static void str_tolower(char *s)
 
 static void game_select(char *name)
 {
-	printf("\n");
+    printf("\n");
     str_tolower(name);                      /* Ignore case when launching game */
     
     if (strcmp(name, "war") == 0)
         war();
     else if (strcmp(name, "solitaire") == 0)
-    	solitaire();
+        solitaire();
     else
-       	printf("Not a valid game.\n");
+        printf("Not a valid game.\n");
 }
 
 int main(int argc, char *argv[])
 {
-	char *old_lcl = setlocale(LC_CTYPE, "en_US.utf8");
+    char *old_lcl = setlocale(LC_CTYPE, "en_US.utf8");
     char *games[NGAMES] = { "war", "solitaire" };
     int option = 0;
 
-    if (argc == 1) {						/* Prompt for game if no game specified */
+    if (argc == 1) {                        /* Prompt for game if no game specified */
         printf("Choose a game:\n\n");
         printf("    1: War\n");
         printf("    2: Solitaire\n");
@@ -66,13 +66,13 @@ int main(int argc, char *argv[])
         printf("Option: ");
 
         do {
-			scanf("%1d", &option);
-			while (getchar() != '\n')
-				;
+            scanf("%1d", &option);
+            while (getchar() != '\n')
+                ;
         } while (option < 1 || option > NGAMES + 1);
         
         if (option == NGAMES + 1)
-        	return 0;
+            return 0;
         game_select(games[option - 1]);
     } else if (argc == 2)
         game_select(argv[1]);
