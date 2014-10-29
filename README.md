@@ -38,7 +38,7 @@ contain cards of the same suit from Ace to King. An extensive set of rules for
 Klondike/solitaire can be found [here]
 (http://www.solitaire-cardgame.com/#rules).
 
-Controls (type the character followed by `<Enter>`; [x-y] denotes a range of
+Controls (type the character followed by `<Enter>`; `[x-y]` denotes a range of
 possible values):
 
 * `s` - flip the stock
@@ -52,6 +52,8 @@ pile (will prompt)
     column (will prompt for another column)
     * `w`, `x`, `y`, or `z` - move the last card from the selected tableau pile
     to the specified foundation pile
+* `u` - undo the previous move, to a maximum of 10 moves back (if you're a true
+solitaire player, you won't use this)
 * Press `P` to pause (note capital 'P')
 
 ### Building from source
