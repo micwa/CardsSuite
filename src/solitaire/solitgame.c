@@ -52,7 +52,8 @@ static int fsave_stats()
     FILE *file = fopen(SOLIT_STATS, "w");
     if (file == NULL)
         return -1;
-        
+    
+    /* Write losses even though it has no meaning */
     fprintf(file, "%d %d %d\n", player->nwins, player->nlosses, player->curr_score);
     fclose(file);
     return 1;
@@ -127,7 +128,6 @@ static void play_game()
     int max_rows = 0, error_flag = 0, stock_empty_flag = 0, undos_empty_flag = 0;
     int col_src, col_dest, row;             /* The src/dest columns, when needed; row is only for TBL_TO_TBL */
     struct SolitMove *curr_move = malloc(sizeof(struct SolitMove));
-    struct Card *card_src = NULL, *card_dest = NULL;
 
     while (g_solit_curr_state == START) {
 
@@ -210,7 +210,7 @@ static void play_game()
 
                     tbl_first[move->num%1000/100 - 1] = move->num/1000 - 1;
                     break;
-                case NONE:                  /* Don't do anything */
+                case NONE:                  /* Not add-able to the stack */
                 case TBL_TO_FDTION:
                 default:
                     printf("Not even possible.\n");
@@ -236,19 +236,14 @@ static void play_game()
                 else
                     curr_move->type = WASTE_TO_TBL;
                 col_dest = option - '1';
-                card_src = &g_stock_hand->cards[waste_index];
-                card_dest = linked_hand_get_card(g_tbl_hand[col_dest],  /* May be NULL */
-                        g_tbl_hand[col_dest]->ncards - 1);
-                curr_move->src = (void *) card_src;
+                curr_move->src = (void *) &g_stock_hand->cards[waste_index];
                 curr_move->dest = (void *) g_tbl_hand[col_dest];
                 curr_move->num = waste_index + (col_dest + 1) * 100;        /* Encoded so that col_to is hundreds digit */
             } else if (option >= 'w' && option <= 'z') {
                 col_dest = option - 'w';
                 curr_move->type = WASTE_TO_FDTION;
-                card_src = &g_stock_hand->cards[waste_index];
-                card_dest = g_fdtion_top[col_dest];
-                curr_move->src = (void *) card_src;
-                curr_move->dest = (void *) card_dest;
+                curr_move->src = (void *) &g_stock_hand->cards[waste_index];
+                curr_move->dest = (void *) g_fdtion_top[col_dest];
                 curr_move->num = waste_index + (col_dest + 1) * 100;
             } else
                 goto error;
@@ -269,13 +264,10 @@ static void play_game()
                 col_dest = option - 'w';
                 row = g_tbl_hand[col_src]->ncards - 1;
                 curr_move->type = TBL_SINGLE_TO_FDTION;
-                card_src = linked_hand_get_card(g_tbl_hand[col_src], g_tbl_hand[col_src]->ncards - 1);
-                card_dest = g_fdtion_top[col_dest];
-                curr_move->src = (void *)card_src;
-                curr_move->dest = (void *)card_dest;
-                curr_move->num = (col_src + 1) * 100        /* Encode also the previous tbl_first[i] */
-                                    + (tbl_first[col_src] + 1) * 1000;
-
+                curr_move->src = (void *) linked_hand_get_card(g_tbl_hand[col_src], g_tbl_hand[col_src]->ncards - 1);
+                curr_move->dest = (void *) g_fdtion_top[col_dest];
+                /* Encode the src column AND the previous tbl_first[i] */
+                curr_move->num = (col_src + 1) * 100 + (tbl_first[col_src] + 1) * 1000;
             } else {
                 /* Prompt for column if alphabet character was typed */
                 if (row >= tbl_first[col_src] && row < g_tbl_hand[col_src]->ncards) {
@@ -292,13 +284,10 @@ static void play_game()
                     else
                         curr_move->type = TBL_TO_TBL;
 
-                    card_src = linked_hand_get_card(g_tbl_hand[col_src], row);
-                    card_dest = linked_hand_get_card(g_tbl_hand[col_dest], g_tbl_hand[col_dest]->ncards - 1);
-                    node = linked_hand_get_node(g_tbl_hand[col_src], row);
-                    curr_move->src = (void *)node;
+                    curr_move->src = (void *) linked_hand_get_node(g_tbl_hand[col_src], row);
                     curr_move->dest = (void *)g_tbl_hand[col_dest];
-                    curr_move->num = g_tbl_hand[col_src]->ncards - row      /* Number of cards moved */
-                                          + (col_src + 1) * 100 + (tbl_first[col_src] + 1) * 1000;
+                    /* Number of cards moved, src column, previous tbl_first[i] */
+                    curr_move->num = g_tbl_hand[col_src]->ncards - row + (col_src + 1) * 100 + (tbl_first[col_src] + 1) * 1000;
                 } else
                     goto error;
             }
@@ -359,7 +348,8 @@ error:
         
         /* On win game */
         if (solit_game_win((const struct Card **)g_fdtion_top)) {
-            player->curr_score = nmoves;
+            if (nmoves < player->curr_score || player->curr_score == 0)
+                player->curr_score = nmoves;
             win_game();
             free(curr_move);
             return;
@@ -398,7 +388,7 @@ void save_solitgame()
         fprintf(file, " %d", tbl_first[i]);
     fprintf(file, "\n");
     
-    /* Record the g_fdtion_top cards as single card values; then save the stock/tableau Hands */
+    /* Record the g_fdtion_top cards as single card values; then save the stock/tableau hands */
     for (int i = 0; i < 4; i++)
         if (g_fdtion_top[i]->number > 0)
             vals[i] = get_card_value(g_fdtion_top[i]);
@@ -425,7 +415,7 @@ void start_new_solitgame()
     struct Hand *deck = gen_ordered_deck();         /* Temporary - will free right after using */
     shuffle_hand(deck, SHUFFLE_AMOUNT);
     
-    /* Allocate all hands, then fill up hands */
+    /* Allocate hands/foundation cards, then fill up tableau hands */
     game_init();
 
     for (count = 0; count < NCARDS_STOCK; count++)  /* Note that Hand copies the cards from the deck; the LinkedHands do not */
@@ -434,7 +424,6 @@ void start_new_solitgame()
         for (int j = 0; j < i + 1; j++)
             linked_hand_add(g_tbl_hand[i], card_node_create(&deck->cards[count++], NULL));
 
-        /* Don't need to set g_tbl_hand[i]->ncards since add()ing it sets it already */
         tbl_first[i] = i;
     }
     free_hand(deck, 1);

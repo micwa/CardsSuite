@@ -16,7 +16,7 @@ struct Hand ** fopen_hand(FILE *file, int nhands)
     /* Go through each line until the newline */
     for (int i = 0; i < nhands; i++) {
         fscanf(file, "%3d", &ncards[i]);    /* Max # of cards = 999 */
-        if (ncards[i] < 0) {                /* Setting is_hand flag when applicable */
+        if (ncards[i] < 0) {                /* Set is_hand flag when applicable */
             is_hand = 1;
             ncards[i] = 0 - ncards[i];
         }

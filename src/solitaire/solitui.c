@@ -88,25 +88,25 @@ static void getopt(int *option)
         ;
 }
 
-/* Prints game statistics */
+/* Prints the number of wins/lowest number of moves and should return on <Enter> */
 static void print_stats()
 {
     int wins = 0, losses = 0, score = 0;
     FILE *file = fopen(SOLIT_STATS, "r");
     if (file != NULL) {
+        fscanf(file, "%d %d %d", &wins, &losses, &score);
         fclose(file);
     } else
         printf("\nNo stats file found.\n");
 
     printf("\n---------PLAYER STATS---------\n\n");
     printf("  Wins: %d\n", wins);
-    printf("  Losses: %d\n", losses);
     printf("  Lowest number of moves: %d\n", score);
     printf("\n------------------------------\n\n");
 
     printf("Press <Enter> to continue...\n");
     while (getchar() != '\n')
-            ;
+        ;
 }
 
 /* Start menu */
@@ -126,7 +126,7 @@ static PTFV show_menu_start()
     } while (option < 1 || option > 4);
 
     switch (option){
-        case 1:    return &start_new_solitgame;
+        case 1: return &start_new_solitgame;
         case 2: return &start_saved_solitgame;
         case 3: return &print_stats;
         case 4: return &quit_solitgame;
@@ -151,7 +151,7 @@ static PTFV show_menu_pause()
     } while (option < 1 || option > 5);
 
     switch (option){
-        case 1:    return &resume_solitgame;
+        case 1: return &resume_solitgame;
         case 2: return &start_new_solitgame;
         case 3: return &save_solitgame;
         case 4: return &print_stats;
@@ -187,7 +187,7 @@ PTFV show_solit_menu()
     switch (g_solit_curr_state) {
         case START: return show_menu_start();
         case PAUSE: return show_menu_pause();
-        case WIN:     return show_menu_win();
+        case WIN:   return show_menu_win();
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
 }

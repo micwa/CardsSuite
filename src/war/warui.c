@@ -90,7 +90,8 @@ static void getopt(int *option)
         ;
 }
 
-void print_war_stats()
+/* Prints game statistics, and should return on <Enter> */
+static void print_stats()
 {
     int cpu_wins = 0, cpu_losses = 0, p_wins = 0, p_losses = 0;
     double cpu_perc = 0, p_perc = 0;
@@ -150,9 +151,9 @@ static PTFV show_menu_start()
     } while (option < 1 || option > 4);
 
     switch (option){
-        case 1:    return &start_new_wargame;
+        case 1: return &start_new_wargame;
         case 2: return &start_saved_wargame;
-        case 3: return &print_war_stats;
+        case 3: return &print_stats;
         case 4: return &quit_wargame;
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
@@ -175,10 +176,10 @@ static PTFV show_menu_pause()
     } while (option < 1 || option > 5);
 
     switch (option){
-        case 1:    return &resume_wargame;
+        case 1: return &resume_wargame;
         case 2: return &start_new_wargame;
         case 3: return &save_wargame;
-        case 4: return &print_war_stats;
+        case 4: return &print_stats;
         case 5: return &quit_wargame;
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
@@ -201,7 +202,7 @@ static PTFV show_menu_win()
 
     switch (option){
         case 1: return &start_new_wargame;
-        case 2: return &print_war_stats;
+        case 2: return &print_stats;
         case 3: return &quit_wargame;
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
@@ -225,7 +226,7 @@ static PTFV show_menu_lose()
 
     switch (option){
         case 1: return &start_new_wargame;
-        case 2: return &print_war_stats;
+        case 2: return &print_stats;
         case 3: return &quit_wargame;
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
@@ -236,8 +237,8 @@ PTFV show_war_menu()
     switch (g_war_curr_state) {
         case START: return show_menu_start();
         case PAUSE: return show_menu_pause();
-        case WIN:     return show_menu_win();
-        case LOSE:     return show_menu_lose();
+        case WIN:   return show_menu_win();
+        case LOSE:  return show_menu_lose();
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
 }
