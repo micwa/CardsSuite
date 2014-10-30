@@ -6,9 +6,25 @@
 
 #include <stdlib.h>
 
-int is_valid_move(enum MoveType type, const struct Card *src, const struct Card *dest)
+int is_valid_move(struct SolitMove *move)
 {
-    switch (type) {                         /* Early cases that disregard src and/or dest */
+    struct Card *src, *dest;
+
+    /* Determine src and dest for comparison */
+    if (move->type == WASTE_TO_FDTION || move->type == TBL_SINGLE_TO_FDTION) {
+        src = (struct Card *)move->src;
+        dest = (struct Card *)move->dest;
+    } else if (move->type == WASTE_TO_TBL_EMPTY || move->type == WASTE_TO_TBL) {
+        src = (struct Card *)move->src;
+        dest = linked_hand_get_card((struct LinkedHand *)move->dest,
+                                    ((struct LinkedHand *)move->dest)->ncards - 1);
+    } else if (move->type == TBL_TO_TBL_EMPTY || move->type == TBL_TO_TBL) {
+        src = ((struct CardNode *)move->src)->card;
+        dest = linked_hand_get_card((struct LinkedHand *)move->dest,
+                                    ((struct LinkedHand *)move->dest)->ncards - 1);
+    } /* Don't do anything if otherwise */
+
+    switch (move->type) {                         /* Early cases that disregard src and/or dest */
         case FLIP_STOCK:
             return 1;
         case NONE:
@@ -36,7 +52,7 @@ int is_valid_move(enum MoveType type, const struct Card *src, const struct Card 
     }
 
     /* Now deciding based on the MoveType */
-    switch (type) {
+    switch (move->type) {
         case WASTE_TO_TBL:
         case TBL_TO_TBL:
             if (opp_suits && (num_dest-num_src) == 1)

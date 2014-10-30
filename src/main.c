@@ -42,14 +42,16 @@ static void str_tolower(char *s)
 static void game_select(char *name)
 {
     printf("\n");
-    str_tolower(name);                      /* Ignore case when launching game */
+    char *game = strdup(name);
+    str_tolower(game);                      /* Ignore case when launching game */
     
-    if (strcmp(name, "war") == 0)
+    if (strcmp(game, "war") == 0)
         war();
-    else if (strcmp(name, "solitaire") == 0)
+    else if (strcmp(game, "solitaire") == 0)
         solitaire();
     else
         printf("Not a valid game.\n");
+    free(game);
 }
 
 int main(int argc, char *argv[])

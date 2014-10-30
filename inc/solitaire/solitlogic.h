@@ -4,10 +4,10 @@
 #include "solitdefs.h"
 #include "carddefs.h"
 
-/* Returns 1 is the moving card src to dest is a valid move, and -1 if not.
+/* Returns 1 is the SolitMove is a valid move (from src to dest), and -1 if not.
  * For FLIP_STOCK and FLIP_TBL, this function will immediately return 1.
  * Returns 0 if type is not a valid MoveType. */
-int is_valid_move(enum MoveType type, const struct Card *src, const struct Card *dest);
+int is_valid_move(struct SolitMove *move);
 
 /* Makes the specified move represented by the given move, and executes it regardless
  * of whether it is a valid solitaire move, and does ONLY that (e.g. does not remove nodes).

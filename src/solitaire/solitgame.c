@@ -136,7 +136,7 @@ static void play_game()
         /* Display errors, and then get input */
         if (undos_empty_flag)
             printf("No more undoes left.\n");
-        else if (error_flag) {
+        if (error_flag) {
             printf("Not a valid move. Try again.\n");
             error_flag = 0;
         }
@@ -167,7 +167,7 @@ static void play_game()
 
             if (move == NULL) {
                 undos_empty_flag = 1;
-                goto error;
+                continue;
             }
 
             switch (move->type) {           /* Add cards/set LinkedHands back to their original state before undoing */
@@ -237,7 +237,7 @@ static void play_game()
                     curr_move->type = WASTE_TO_TBL;
                 col_dest = option - '1';
                 card_src = &g_stock_hand->cards[waste_index];
-                card_dest = linked_hand_get_card(g_tbl_hand[option - '1'],  /* May be NULL */
+                card_dest = linked_hand_get_card(g_tbl_hand[col_dest],  /* May be NULL */
                         g_tbl_hand[col_dest]->ncards - 1);
                 curr_move->src = (void *) card_src;
                 curr_move->dest = (void *) g_tbl_hand[col_dest];
@@ -248,7 +248,7 @@ static void play_game()
                 card_src = &g_stock_hand->cards[waste_index];
                 card_dest = g_fdtion_top[col_dest];
                 curr_move->src = (void *) card_src;
-                curr_move->dest = (void *) g_fdtion_top[col_dest];
+                curr_move->dest = (void *) card_dest;
                 curr_move->num = waste_index + (col_dest + 1) * 100;
             } else
                 goto error;
@@ -272,7 +272,7 @@ static void play_game()
                 card_src = linked_hand_get_card(g_tbl_hand[col_src], g_tbl_hand[col_src]->ncards - 1);
                 card_dest = g_fdtion_top[col_dest];
                 curr_move->src = (void *)card_src;
-                curr_move->dest = (void *)g_fdtion_top[col_dest];
+                curr_move->dest = (void *)card_dest;
                 curr_move->num = (col_src + 1) * 100        /* Encode also the previous tbl_first[i] */
                                     + (tbl_first[col_src] + 1) * 1000;
 
@@ -310,7 +310,7 @@ error:
 
         /* Now make the move, push it onto the stack, and do ALL the processing here
          * (i.e. removing nodes, changing waste_index/tbl_first[i]) */
-        if (is_valid_move(curr_move->type, card_src, card_dest) == 1) {
+        if (is_valid_move(curr_move) == 1) {
             make_move(curr_move);
             stack_push(move_stack, curr_move);
             undos_empty_flag = 0;           /* Reset flag for undoes here */
@@ -358,7 +358,7 @@ error:
         nmoves++;
         
         /* On win game */
-        if (solit_game_win(g_fdtion_top)) {
+        if (solit_game_win((const struct Card **)g_fdtion_top)) {
             player->curr_score = nmoves;
             win_game();
             free(curr_move);
