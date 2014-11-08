@@ -1,6 +1,8 @@
 #ifndef WARGAME_H_
 #define WARGAME_H_
 
+#include "gamedefs.h"
+
 /* Declare global constants and variables */
 extern const char *WAR_STATS;
 extern const char *WAR_SAVE;

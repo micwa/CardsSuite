@@ -31,6 +31,8 @@
 
 #define NGAMES 2
 
+static char *games[NGAMES] = { "war", "solitaire" };
+
 static void str_tolower(char *s)
 {
     while (*s != '\0') {
@@ -42,22 +44,24 @@ static void str_tolower(char *s)
 static void game_select(char *name)
 {
     printf("\n");
-    char *game = strdup(name);
+
+    char *game = malloc(strlen(name) + 1);
+    strcpy(game, name);
     str_tolower(game);                      /* Ignore case when launching game */
     
-    if (strcmp(game, "war") == 0)
+    if (strcmp(game, games[0]) == 0) {
+        free(game);
         war();
-    else if (strcmp(game, "solitaire") == 0)
+    } else if (strcmp(game, games[1]) == 0) {
+        free(game);
         solitaire();
-    else
+    } else
         printf("Not a valid game.\n");
-    free(game);
 }
 
 int main(int argc, char *argv[])
 {
     char *old_lcl = setlocale(LC_CTYPE, "en_US.utf8");
-    char *games[NGAMES] = { "war", "solitaire" };
     int option = 0;
 
     if (argc == 1) {                        /* Prompt for game if no game specified */
@@ -75,10 +79,11 @@ int main(int argc, char *argv[])
         
         if (option == NGAMES + 1)
             return 0;
+
         game_select(games[option - 1]);
-    } else if (argc == 2)
+    } else if (argc == 2) {
         game_select(argv[1]);
-    else
+    } else
         printf("Too many arguments!");
 
     setlocale(LC_CTYPE, old_lcl);

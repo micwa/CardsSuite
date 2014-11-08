@@ -250,7 +250,6 @@ static void play_game()
         } else if (option >= '1' && option <= '7') {
             /* To move a single card, select a column (1-7) or a foundation pile (w, x, y, z).
              * To move many cards, select a row AND THEN a column */
-            struct CardNode *node;
             col_src = option - '1';
             if (tbl_first[col_src] < 0)     /* Error if no cards in pile */
                 goto error;

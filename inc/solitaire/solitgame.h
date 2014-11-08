@@ -1,6 +1,8 @@
 #ifndef SOLITGAME_H_
 #define SOLITGAME_H_
 
+#include "gamedefs.h"
+
 /* Declare global constants and variables */
 extern const char *SOLIT_STATS;
 extern const char *SOLIT_SAVE;

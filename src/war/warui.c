@@ -212,7 +212,7 @@ static PTFV show_menu_lose()
 {
     int option = 0;
 
-    printf("\nCONGRATULATIONS on somehow losing! ");
+    printf("\nCONGRATULATIONS on somehow losing!");
     printf("I don't know why you did it, but you beat the odds and lost!");
     printf("\n\nPlay again?\n\n");
     printf("    1. Start a new game\n");
