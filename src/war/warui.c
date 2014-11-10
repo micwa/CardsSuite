@@ -132,6 +132,7 @@ static void print_stats()
     printf("Press <Enter> to continue...\n");
     while (getchar() != '\n')
         ;
+    BOARD_CLEAR;
 }
 
 /* Start menu */
@@ -139,6 +140,7 @@ static PTFV show_menu_start()
 {
     int option = 0;
 
+    printf("=========================\n\n");
     printf("Welcome to WAR!\n\n");
     printf("    1. Start new game\n");
     printf("    2. Resume saved game\n");

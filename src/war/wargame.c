@@ -165,7 +165,7 @@ static void play_game()
 
 void quit_wargame()
 {
-    printf("Thank you for playing. Bye!\n");
+    printf("\nThank you for playing. Bye!\n");
     game_destroy();
     free_card_encs();
 
@@ -230,7 +230,7 @@ void start_saved_wargame()
     struct Hand **hands;
     FILE *file = fopen(WAR_SAVE, "r");
     if (file == NULL) {
-        printf("No save file found, or error opening file.\n\n");
+        printf("\nNo save file found, or error opening file.\n\n");
         return;
     }
     /* Get the turn number first */

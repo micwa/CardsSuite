@@ -359,7 +359,7 @@ error:
 
 void quit_solitgame()
 {
-    printf("Thank you for playing. Bye!\n");
+    printf("\nThank you for playing. Bye!\n");
     game_destroy();
     free_card_encs();
 
@@ -441,7 +441,7 @@ void start_saved_solitgame()
     struct Hand **temp;                     /* For storing fopen_hand() arrays (of pointers) */
     FILE *file = fopen(SOLIT_SAVE, "r");
     if (file == NULL) {
-        printf("No save file found, or error opening file.\n");
+        printf("\nNo save file found, or error opening file.\n");
         show_solit_menu();
         return;
     }
