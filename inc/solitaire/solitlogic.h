@@ -18,9 +18,8 @@ int make_move(struct SolitMove *move);
 /* Returns 1 if the game is won (i.e. all foundation piles are filled), 0 if not */
 int solit_game_win(const struct Card *fdtion[4]);
 
-/* Undoes the move represented by the given move (the opposite of make_move(), basically).
- * Does not remove any nodes or change any indices.
- * Returns a void pointer to whatever it removes (if anything) and NULL otherwise. */
-void * undo_move(struct SolitMove *move);
+/* Undoes the move represented by the given move (the opposite of make_move(), basically)
+ * and updates the given waste_index and tbl_firsts as appropriate. */
+void undo_move(struct SolitMove *move, int *waste_index, int tbl_first[7]);
 
 #endif /* SOLITLLOGIC_H_ */

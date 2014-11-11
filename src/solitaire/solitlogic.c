@@ -1,4 +1,5 @@
 #include "solitlogic.h"
+#include "solitgame.h"
 #include "solitdefs.h"
 #include "carddefs.h"
 #include "cardutility.h"
@@ -118,29 +119,59 @@ int solit_game_win(const struct Card *fdtion[4])
     return 1;
 }
 
-void * undo_move(struct SolitMove *move)
+void undo_move(struct SolitMove *move, int *waste_index, int tbl_first[7])
 {
-    struct Card *card;
+    struct Card *card1, *card2;
     struct LinkedHand *lhand;
+    struct CardNode *node;
+    /* num1 stores up to 99; num2 up to 9; num3 up to whatever you want */
+    int num1 = move->num % 100, num2 = move->num % 1000 / 100 - 1,
+        num3 = move->num / 1000 - 1;
 
     switch (move->type) {
-        case WASTE_TO_TBL_EMPTY:            /* src = Card, dest = LinkedHand */
+        case FLIP_STOCK:
+            *waste_index = num1;
+            if (*waste_index != -1)
+                g_stock_hand->isplayed[*waste_index] = 0;
+            break;
+        case WASTE_TO_TBL_EMPTY:            /* num1 = waste_index, num2 = col_dest */
+            tbl_first[num2] = -1;
+            /* Fall through */
         case WASTE_TO_TBL:
+            *waste_index = num1;
+            g_stock_hand->isplayed[*waste_index] = 0;
             lhand = (struct LinkedHand *)move->dest;
-            return (void *)linked_hand_remove(lhand, lhand->ncards - 1, 1);
-        case TBL_TO_TBL_EMPTY:              /* src = CardNode, dest = LinkedHand */
+            node = linked_hand_remove(lhand, lhand->ncards - 1, 1);
+            free(node->card);
+            free(node);
+            break;
+        case TBL_TO_TBL_EMPTY:              /* num2 = col_src, num3 = old tbl_first[num2] */
+            tbl_first[num2] = -1;
+            /* Fall through */
         case TBL_TO_TBL:
             lhand = (struct LinkedHand *)move->dest;
-            return (void *)linked_hand_remove(lhand, lhand->ncards - move->num % 100, 1);
-        case WASTE_TO_FDTION:               /* src = Card, dest = Card */
-        case TBL_SINGLE_TO_FDTION:
-            card = (struct Card *)move->dest;
-            card->number--;
-            return (void *)card;
-        case FLIP_STOCK:                    /* Caller should take care of reverting the waste index */
+            node = linked_hand_remove(lhand, lhand->ncards - move->num % 100, 1);
+            linked_hand_add(g_tbl_hand[num3], node);
+            tbl_first[num2] = num3;
+            break;
+        case WASTE_TO_FDTION:               /* num1 = waste_index */
+            *waste_index = num1;
+            g_stock_hand->isplayed[*waste_index] = 0;
+            card1 = (struct Card *)move->dest;
+            card1->number--;
+            break;
+        case TBL_SINGLE_TO_FDTION:          /* num2 = col_src, num3 = old tbl_first[num2] */
+            card1 = (struct Card *)move->dest;
+            card1->number--;
+            card2 = malloc(sizeof(struct Card));    /* Can't access move->src since already free()'d */
+            card2->number = card1->number + 1;
+            card2->suit = card1->suit;
+            linked_hand_add(g_tbl_hand[num3], card_node_create(card2, NULL));
+            tbl_first[num2] = num3;
+            break;
         case NONE:                          /* Do nothing */
         case TBL_TO_FDTION:
         default:
-            return NULL;
+            return;
     }
 }

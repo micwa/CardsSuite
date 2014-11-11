@@ -160,62 +160,11 @@ static void play_game()
             /* Pop the last move off the stack, call undo_move(), and change the indices/
              * remove the nodes as appropriate */
             struct SolitMove *move = stack_pop(move_stack);
-            struct LinkedHand *temp_hand;
-            struct CardNode *temp_node;
-            struct Card *temp_card, *temp_card2;
-            int num = move->num % 100;      /* The "base" number, for easy reference */
-
-            if (move == NULL) {
+            if (move == NULL)
                 undos_empty_flag = 1;
-                continue;
-            }
+            else
+                undo_move(move, &waste_index, tbl_first);
 
-            switch (move->type) {           /* Add cards/set LinkedHands back to their original state before undoing */
-                case FLIP_STOCK:
-                    waste_index = num;
-                    if (waste_index != -1)
-                        g_stock_hand->isplayed[waste_index] = 0;
-                    undo_move(move);                /* Undo (does nothing) */
-                    break;
-                case WASTE_TO_TBL_EMPTY:
-                    tbl_first[move->num/100 - 1] = -1;
-                case WASTE_TO_FDTION:
-                    waste_index = num;
-                    g_stock_hand->isplayed[waste_index] = 0;
-                    undo_move(move);                /* Undo */
-                    break;
-                case WASTE_TO_TBL:
-                    waste_index = num;
-                    g_stock_hand->isplayed[waste_index] = 0;
-                    temp_node = (struct CardNode *)undo_move(move); /* Undo, and free hand-less node */
-                    free(temp_node->card);
-                    free(temp_node);
-                    break;
-                case TBL_TO_TBL_EMPTY:
-                    tbl_first[move->num/100 - 1] = -1;
-                case TBL_TO_TBL:
-                    temp_node = (struct CardNode *)undo_move(move); /* Undo, and re-add to the LinkedHand */
-                    temp_hand = g_tbl_hand[move->num/1000 - 1];
-                    linked_hand_add(temp_hand, temp_node);
-
-                    /* Revert to previous tbl_first[i] */
-                    tbl_first[move->num%1000/100 - 1] = move->num/1000 - 1;
-                    break;
-                case TBL_SINGLE_TO_FDTION:
-                    temp_card2 = (struct Card *)undo_move(move);    /* Undo, and create new card for the LinkedHand (create new node) */
-                    temp_card = malloc(sizeof(struct Card));
-                    temp_card->number = temp_card2->number + 1;
-                    temp_card->suit = temp_card2->suit;       /* Kind of cheating, but only way because src card was free()'d already */
-                    linked_hand_add(g_tbl_hand[move->num%1000/100 - 1], card_node_create(temp_card, NULL));
-
-                    tbl_first[move->num%1000/100 - 1] = move->num/1000 - 1;
-                    break;
-                case NONE:                  /* Not add-able to the stack */
-                case TBL_TO_FDTION:
-                default:
-                    printf("Not even possible.\n");
-                    exit(EXIT_FAILURE);
-            }
             /* Go to the next turn */
             continue;
         } else if (option == 's' && !stock_empty_flag) {
