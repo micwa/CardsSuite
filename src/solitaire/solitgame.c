@@ -162,11 +162,11 @@ static void play_game()
             struct SolitMove *move = stack_pop(move_stack);
             if (move == NULL)
                 undos_empty_flag = 1;
-            else
+            else {
                 undo_move(move, &waste_index, tbl_first);
-
-            /* Go to the next turn */
-            continue;
+                nmoves++;
+            }
+            continue;                       /* Go to the next turn either way */
         } else if (option == 's' && !stock_empty_flag) {
             curr_move->type = FLIP_STOCK;
             curr_move->num = waste_index;

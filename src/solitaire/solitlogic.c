@@ -121,7 +121,7 @@ int solit_game_win(const struct Card *fdtion[4])
 
 void undo_move(struct SolitMove *move, int *waste_index, int tbl_first[7])
 {
-    struct Card *card1, *card2;
+    struct Card *card;
     struct LinkedHand *lhand;
     struct CardNode *node;
     /* num1 stores up to 99; num2 up to 9; num3 up to whatever you want */
@@ -157,16 +157,15 @@ void undo_move(struct SolitMove *move, int *waste_index, int tbl_first[7])
         case WASTE_TO_FDTION:               /* num1 = waste_index */
             *waste_index = num1;
             g_stock_hand->isplayed[*waste_index] = 0;
-            card1 = (struct Card *)move->dest;
-            card1->number--;
+            card = (struct Card *)move->dest;
+            card->number--;
             break;
         case TBL_SINGLE_TO_FDTION:          /* num2 = col_src, num3 = old tbl_first[num2] */
-            card1 = (struct Card *)move->dest;
-            card1->number--;
-            card2 = malloc(sizeof(struct Card));    /* Can't access move->src since already free()'d */
-            card2->number = card1->number + 1;
-            card2->suit = card1->suit;
-            linked_hand_add(g_tbl_hand[num3], card_node_create(card2, NULL));
+            card = (struct Card *)move->dest;
+            card->number--;
+            /* Can't access move->src since already free()'d */
+            linked_hand_add(g_tbl_hand[num3], card_node_create(
+                    &(struct Card){ card->number + 1, card->suit}, NULL));
             tbl_first[num2] = num3;
             break;
         case NONE:                          /* Do nothing */
