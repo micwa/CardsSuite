@@ -2,9 +2,9 @@
 CC = gcc
 
 # Compiler flags & libraries
-IDIR = -I./inc \
-	-I./inc/war \
-	-I./inc/solitaire
+IDIR = -I./include \
+	-I./include/war \
+	-I./include/solitaire
 CFLAGS = -O3 -std=c99 $(IDIR)
 
 # Directories
@@ -14,7 +14,7 @@ SRC = src
 SRC_DIR = $(SRC) $(addprefix $(SRC)/, $(SDIRS))
 SRC_FILES = $(notdir $(foreach sdir, $(SRC_DIR), $(wildcard $(sdir)/*.c)))
 OBJ_DIR = src
-#obj
+
 # Executable, objects, source
 NAME = CardsSuite
 # $(BIN_DIR)/main
