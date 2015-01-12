@@ -49,14 +49,14 @@ static void game_select(char *name)
     strcpy(game, name);
     str_tolower(game);                      /* Ignore case when launching game */
     
-    if (strcmp(game, games[0]) == 0) {
-        free(game);
+    if (strcmp(game, games[0]) == 0)
         war();
-    } else if (strcmp(game, games[1]) == 0) {
-        free(game);
+    else if (strcmp(game, games[1]) == 0)
         solitaire();
-    } else
+    else
         printf("Not a valid game.\n");
+
+    free(game);
 }
 
 int main(int argc, char *argv[])

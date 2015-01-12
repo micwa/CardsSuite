@@ -94,7 +94,7 @@ static void print_stats()
     int wins = 0, losses = 0, score = 0;
     FILE *file = fopen(SOLIT_STATS, "r");
     if (file != NULL) {
-        fscanf(file, "%d %d %d", &wins, &losses, &score);
+        fscanf(file, "%9d %9d %9d", &wins, &losses, &score);
         fclose(file);
     } else
         printf("\nNo stats file found.\n");

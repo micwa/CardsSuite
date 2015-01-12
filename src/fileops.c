@@ -11,7 +11,7 @@ struct Hand ** fopen_hand(FILE *file, int nhands)
 {
     struct Hand **hands = malloc(nhands * sizeof(struct Hand *));
     int ncards[nhands], count[nhands];      /* Number of cards in each hand; counter for error-checking */
-    int card_val, c, is_hand = 0;
+    int card_val, is_hand = 0;
 
     /* Go through each line until the newline */
     for (int i = 0; i < nhands; i++) {
@@ -23,7 +23,7 @@ struct Hand ** fopen_hand(FILE *file, int nhands)
         hands[i] = hand_create(ncards[i]);
         count[i] = 0;
 
-        while ((c = fgetc(file)) != '\n') {
+        while (fgetc(file) != '\n') {
             fscanf(file, "%3d", &card_val);
             hands[i]->cards[count[i]].number = card_val % 13 + 1;
             hands[i]->cards[count[i]].suit = card_val / 13 ;
@@ -39,7 +39,7 @@ struct Hand ** fopen_hand(FILE *file, int nhands)
             int count2 = 0;
             fscanf(file, "%1d", &hands[i]->isplayed[count2++]);
 
-            while ((c = fgetc(file)) != '\n') {
+            while (fgetc(file) != '\n') {
                 fscanf(file, "%1d", &hands[i]->isplayed[count2++]);
 
                 if (ncards[i] < count2) {
