@@ -32,7 +32,7 @@ static struct Player *player = NULL;        /* Used ONLY for tracking stats */
 static int nmoves = 0;                      /* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
 
-static void fload_stats()
+static void fload_stats(void)
 {
     FILE *file = fopen(SOLIT_STATS, "r");
     if (file == NULL) {                     /* Default: set everything to 0 */
@@ -47,7 +47,7 @@ static void fload_stats()
 
 /* Writes to the stats file the player's stats in one line, terminating
  * with a newline character. Returns 1 on success, -1 on failure */
-static int fsave_stats()
+static int fsave_stats(void)
 {
     FILE *file = fopen(SOLIT_STATS, "w");
     if (file == NULL)
@@ -60,7 +60,7 @@ static int fsave_stats()
 }
 
 /* Frees all malloc'd memory (players, hands, etc.) */
-static void game_destroy()
+static void game_destroy(void)
 {
     if (player != NULL)
         free(player);
@@ -81,7 +81,7 @@ static void game_destroy()
 /* Allocates memory for the player, sets its Hand to NULL (other initialization for
  * the player is done in fload_stats()). Also allocates memory for ALL Hands/LinkedHands
  * & members (one level down). */
-static void game_init()
+static void game_init(void)
 {
     player = malloc(sizeof(struct Player));
     player->hand = NULL;
@@ -108,13 +108,13 @@ static void getopt(char *option)
 }
 
 /* Set the current state to PAUSE and bring up the pause menu */
-static void pause_game()
+static void pause_game(void)
 {
     g_solit_curr_state = PAUSE;
 }
 
 /* Win the game */
-static void win_game()
+static void win_game(void)
 {
     g_solit_curr_state = WIN;
     fsave_stats();
@@ -122,7 +122,7 @@ static void win_game()
 
 /* Start playing the game, assuming that hands are initialized.
  * Most logic checking/move making is "outsourced" to solitlogic. */
-static void play_game()
+static void play_game(void)
 {
     char option;
     int max_rows = 0, error_flag = 0, stock_empty_flag = 0, undos_empty_flag = 0;
@@ -306,7 +306,7 @@ error:
     free(curr_move);
 }
 
-void quit_solitgame()
+void quit_solitgame(void)
 {
     printf("\nThank you for playing. Bye!\n");
     game_destroy();
@@ -315,13 +315,13 @@ void quit_solitgame()
     exit(EXIT_SUCCESS);
 }
 
-void resume_solitgame()
+void resume_solitgame(void)
 {
     g_solit_curr_state = START;
     play_game();
 }
 
-void save_solitgame()
+void save_solitgame(void)
 {
     int vals[4] = { -1, -1, -1, -1 };       /* For the foundation card values; note that it is possible for card values to be 0 */
     FILE *file = fopen(SOLIT_SAVE, "w");
@@ -354,7 +354,7 @@ void save_solitgame()
     printf("\nSuccessfully saved game!\n\n");
 }
 
-void start_new_solitgame()
+void start_new_solitgame(void)
 {
     printf("Starting new game...\n");
     game_destroy();
@@ -382,7 +382,7 @@ void start_new_solitgame()
     play_game();
 }
 
-void start_saved_solitgame()
+void start_saved_solitgame(void)
 {
     game_destroy();
 
@@ -438,7 +438,7 @@ void start_saved_solitgame()
     play_game();
 }
 
-void solitaire()
+void solitaire(void)
 {
     while (1) {                             /* Infinite loop until quit_solitgame() is called */
         PTFV fptr = show_solit_menu();

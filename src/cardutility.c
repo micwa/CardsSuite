@@ -52,7 +52,7 @@ void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand)
     l_hand->ncards = hand->ncards;
 }
 
-void free_card_encs()
+void free_card_encs(void)
 {
     if (is_encs_init) {                     /* Keep track of initialization here (in cardutil) */
         for (int i = 0; i < 52; i++)
@@ -61,7 +61,7 @@ void free_card_encs()
     }
 }
 
-struct Hand * gen_ordered_deck()
+struct Hand * gen_ordered_deck(void)
 {
     struct Hand *hand = hand_create(52);    /* Remember to free() this (as with all other *_create() functions) */
     struct Card *cards = hand->cards;
@@ -73,7 +73,7 @@ struct Hand * gen_ordered_deck()
     return hand;
 }
 
-struct Card gen_random_card()
+struct Card gen_random_card(void)
 {
     int num, suit;
     struct Card card;
@@ -159,7 +159,7 @@ int get_next_unplayed(struct Hand *hand, int index, int do_loop)
     return -1;
 }
 
-void init_card_encs()
+void init_card_encs(void)
 {
     if (!is_encs_init) {
         struct Hand *hand = gen_ordered_deck();     /* Do this because get_card_encoding doesn't accept ints */

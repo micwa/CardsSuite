@@ -19,7 +19,7 @@ static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };       /* The played cards */
 static int nturns = 0;                      /* Turns played so far */
 
-static void fload_stats()
+static void fload_stats(void)
 {
     FILE *file = fopen(WAR_STATS, "r");
     if (file == NULL) {                     /* Default: set everything to 0 */
@@ -36,7 +36,7 @@ static void fload_stats()
 
 /* Writes to the stats file the players' stats, one player per line terminating
  * with a newline character. Returns 1 on success, -1 on failure */
-static int fsave_stats()
+static int fsave_stats(void)
 {
     FILE *file = fopen(WAR_STATS, "w");
     if (file == NULL)
@@ -49,7 +49,7 @@ static int fsave_stats()
 }
 
 /* Frees all malloc'd memory (players, hands, etc.) */
-static void game_destroy()
+static void game_destroy(void)
 {
     if (cpu != NULL) {
         free_linked_hand(cpu->hand, 1);
@@ -64,7 +64,7 @@ static void game_destroy()
 }
 
 /* Sets up the players, load stats, and set up the LinkedHands */
-static void game_init()
+static void game_init(void)
 {
     cpu = malloc(sizeof(struct Player_L));
     player = malloc(sizeof(struct Player_L));
@@ -77,20 +77,20 @@ static void game_init()
 }
 
 /* Lose the game */
-static void lose_game()
+static void lose_game(void)
 {
     g_war_curr_state = LOSE;
     fsave_stats();
 }
 
 /* Set the current state to PAUSE */
-static void pause_game()
+static void pause_game(void)
 {
     g_war_curr_state = PAUSE;
 }
 
 /* Win the game */
-static void win_game()
+static void win_game(void)
 {
     g_war_curr_state = WIN;
     fsave_stats();
@@ -98,7 +98,7 @@ static void win_game()
 
 /* Start playing the game, assuming that hands are initialized.
  * Returns on pause_game(), win_game(), and lose_game(). */
-static void play_game()
+static void play_game(void)
 {
     /* For comparing current cards, and storing previous ones for drawing.
      * cpu is index 0, player is index 1 */
@@ -163,7 +163,7 @@ static void play_game()
     }
 }
 
-void quit_wargame()
+void quit_wargame(void)
 {
     printf("\nThank you for playing. Bye!\n");
     game_destroy();
@@ -172,13 +172,13 @@ void quit_wargame()
     exit(EXIT_SUCCESS);
 }
 
-void resume_wargame()
+void resume_wargame(void)
 {
     g_war_curr_state = START;
     play_game();                            /* Only function other than start_*_wargame() that should call play_game() */
 }
 
-void save_wargame()
+void save_wargame(void)
 {
     FILE *file = fopen(WAR_SAVE, "w");
     if (file == NULL) {
@@ -198,7 +198,7 @@ void save_wargame()
     printf("\nSuccessfully saved game!\n\n");
 }
 
-void start_new_wargame()
+void start_new_wargame(void)
 {
     printf("Starting new game...\n");
     game_destroy();                         /* If quitting previous game */
@@ -222,7 +222,7 @@ void start_new_wargame()
     play_game();
 }
 
-void start_saved_wargame()
+void start_saved_wargame(void)
 {
     game_destroy();
 
@@ -252,7 +252,7 @@ void start_saved_wargame()
     play_game();
 }
 
-void war()
+void war(void)
 {
     while (1) {                             /* Infinite loop until quit_wargame() is called */
         PTFV fptr = show_war_menu();

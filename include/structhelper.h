@@ -19,7 +19,7 @@ void free_linked_hand(struct LinkedHand *hand, int do_free_cards);
 struct Hand * hand_create(int ncards);
 
 /* Creates a LinkedHand with ncards = 0, and the CardNode set NULL  */
-struct LinkedHand * linked_hand_create();
+struct LinkedHand * linked_hand_create(void);
 
 /* Initializes the given Player_L with the given values. Player_L must be a valid pointer */
 void playerl_init(struct Player_L *player, int wins, int losses, int curr_score);

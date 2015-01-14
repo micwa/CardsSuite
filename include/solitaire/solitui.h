@@ -13,6 +13,6 @@ typedef void (*PTFV)();                     /* A pointer to a function taking ze
 void draw_solit_board(int waste_index, int tbl_first[7], int draw_rows, int draw_cols);
 
 /* Displays the menu (different depending on current gamestate) */
-PTFV show_solit_menu();
+PTFV show_solit_menu(void);
 
 #endif /* SOLITUI_H_ */

@@ -91,7 +91,7 @@ static void getopt(int *option)
 }
 
 /* Prints game statistics, and should return on <Enter> */
-static void print_stats()
+static void print_stats(void)
 {
     int cpu_wins = 0, cpu_losses = 0, p_wins = 0, p_losses = 0;
     double cpu_perc = 0, p_perc = 0;
@@ -136,7 +136,7 @@ static void print_stats()
 }
 
 /* Start menu */
-static PTFV show_menu_start()
+static PTFV show_menu_start(void)
 {
     int option = 0;
 
@@ -161,7 +161,7 @@ static PTFV show_menu_start()
     }
 }
 
-static PTFV show_menu_pause()
+static PTFV show_menu_pause(void)
 {
     int option = 0;
 
@@ -186,7 +186,7 @@ static PTFV show_menu_pause()
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
 }
-static PTFV show_menu_win()
+static PTFV show_menu_win(void)
 {
     int option = 0;
 
@@ -210,7 +210,7 @@ static PTFV show_menu_win()
     }
 }
 
-static PTFV show_menu_lose()
+static PTFV show_menu_lose(void)
 {
     int option = 0;
 
@@ -234,7 +234,7 @@ static PTFV show_menu_lose()
     }
 }
 
-PTFV show_war_menu()
+PTFV show_war_menu(void)
 {
     switch (g_war_curr_state) {
         case START: return show_menu_start();

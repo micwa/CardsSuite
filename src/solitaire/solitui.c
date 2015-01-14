@@ -89,7 +89,7 @@ static void getopt(int *option)
 }
 
 /* Prints the number of wins/lowest number of moves and should return on <Enter> */
-static void print_stats()
+static void print_stats(void)
 {
     int wins = 0, losses = 0, score = 0;
     FILE *file = fopen(SOLIT_STATS, "r");
@@ -111,7 +111,7 @@ static void print_stats()
 }
 
 /* Start menu */
-static PTFV show_menu_start()
+static PTFV show_menu_start(void)
 {
     int option = 0;
 
@@ -136,7 +136,7 @@ static PTFV show_menu_start()
     }
 }
 
-static PTFV show_menu_pause()
+static PTFV show_menu_pause(void)
 {
     int option = 0;
 
@@ -161,7 +161,7 @@ static PTFV show_menu_pause()
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
     }
 }
-static PTFV show_menu_win()
+static PTFV show_menu_win(void)
 {
     int option = 0;
 
@@ -184,7 +184,7 @@ static PTFV show_menu_win()
     }
 }
 
-PTFV show_solit_menu()
+PTFV show_solit_menu(void)
 {
     switch (g_solit_curr_state) {
         case START: return show_menu_start();

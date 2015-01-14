@@ -20,14 +20,14 @@ int card_compare(const struct Card *c1, const struct Card *c2);
 void fill_linked_hand(struct LinkedHand *l_hand, const struct Hand *hand);
 
 /* Frees all_card_encs if init_card_encs() had been called; otherwise, does nothing. */
-void free_card_encs();
+void free_card_encs(void);
 
 /* Returns a Hand pointer with 52 cards in order from Ace to King, in the suit order
  * specified by carddefs.h */
-struct Hand * gen_ordered_deck();
+struct Hand * gen_ordered_deck(void);
 
 /* Returns a random card */
-struct Card gen_random_card();
+struct Card gen_random_card(void);
 
 /* Returns the encoding in UTF-8 of the playing card */
 char * get_card_encoding(const struct Card *card);
@@ -46,7 +46,7 @@ int get_next_unplayed(struct Hand *hand, int index, int do_loop);
 
 /* Retrieves all 52 card encodings and stores them in an array (if they have not yet been
  * initialized). This MUST be called if you require access to g_card_encs for its card strings. */
-void init_card_encs();
+void init_card_encs(void);
 
 /* Adds the given CardNode at the end of the LinkedHand, and increments ncards
  * by 1. If the LinkedHand's CardNode is null, makes that node the given node. */

@@ -49,7 +49,7 @@ struct Hand * hand_create(int ncards)
     return hand;
 }
 
-struct LinkedHand * linked_hand_create()
+struct LinkedHand * linked_hand_create(void)
 {
     struct LinkedHand *hand = malloc(sizeof(struct LinkedHand));
     hand->ncards = 0;

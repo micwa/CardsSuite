@@ -11,6 +11,6 @@ void draw_war_board(const struct Player_L *player, const struct Player_L *cpu, c
 
 /* Displays the menu (different depending on current gamestate) and returns a pointer to the
  * function (start_new_game(), print_war_stats(), etc.) representing the action selected. */
-PTFV show_war_menu();
+PTFV show_war_menu(void);
 
 #endif /* WARUI_H_ */
