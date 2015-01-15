@@ -19,7 +19,6 @@
 
 const char *SOLIT_STATS = "solit.stats";
 const char *SOLIT_SAVE = "solit.deck";
-enum GameState g_solit_curr_state = START;
 struct Hand *g_stock_hand = NULL;
 struct LinkedHand *g_tbl_hand[7] = { NULL };
 struct Card *g_fdtion_top[4] = { NULL };    /* No point in creating an array/otherwise for the foundation cards */
@@ -31,6 +30,7 @@ static struct SolitStack *move_stack = NULL;
 static struct Player *player = NULL;        /* Used ONLY for tracking stats */
 static int nmoves = 0;                      /* Moves made so far */
 static int waste_index = -1;                /* Index of the *current* card shown in the waste pile */
+static enum GameState curr_state = START;
 
 static void fload_stats(void)
 {
@@ -110,13 +110,13 @@ static void getopt(char *option)
 /* Set the current state to PAUSE and bring up the pause menu */
 static void pause_game(void)
 {
-    g_solit_curr_state = PAUSE;
+    curr_state = PAUSE;
 }
 
 /* Win the game */
 static void win_game(void)
 {
-    g_solit_curr_state = WIN;
+    curr_state = WIN;
     fsave_stats();
 }
 
@@ -129,7 +129,7 @@ static void play_game(void)
     int col_src, col_dest, row;             /* The src/dest columns, when needed; row is only for TBL_TO_TBL */
     struct SolitMove *curr_move = malloc(sizeof(struct SolitMove));
 
-    while (g_solit_curr_state == START) {
+    while (curr_state == START) {
 
         draw_solit_board(waste_index, tbl_first, 1, 1);
 
@@ -312,12 +312,12 @@ void quit_solitgame(void)
     game_destroy();
     free_card_encs();
 
-    exit(EXIT_SUCCESS);
+    curr_state = QUIT;
 }
 
 void resume_solitgame(void)
 {
-    g_solit_curr_state = START;
+    curr_state = START;
     play_game();
 }
 
@@ -378,7 +378,7 @@ void start_new_solitgame(void)
     
     nmoves = 0;
     waste_index = -1;
-    g_solit_curr_state = START;
+    curr_state = START;
     play_game();
 }
 
@@ -391,7 +391,6 @@ void start_saved_solitgame(void)
     FILE *file = fopen(SOLIT_SAVE, "r");
     if (file == NULL) {
         printf("\nNo save file found, or error opening file.\n");
-        show_solit_menu();
         return;
     }
 
@@ -434,14 +433,14 @@ void start_saved_solitgame(void)
     fclose(file);
 
     nmoves = moves;
-    g_solit_curr_state = START;
+    curr_state = START;
     play_game();
 }
 
 void solitaire(void)
 {
-    while (1) {                             /* Infinite loop until quit_solitgame() is called */
-        PTFV fptr = show_solit_menu();
+    while (curr_state != QUIT) {  			/* Loop until quit_solitgame() is called */
+        PTFV fptr = show_solit_menu(curr_state);
         (*fptr)();
     }
 }

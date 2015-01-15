@@ -3,7 +3,7 @@
 
 #include "carddefs.h"
 
-enum GameState { START, PAUSE, WIN, LOSE };
+enum GameState { START, PAUSE, WIN, LOSE, QUIT };
 
 struct Player {
     struct Hand *hand;

@@ -234,13 +234,14 @@ static PTFV show_menu_lose(void)
     }
 }
 
-PTFV show_war_menu(void)
+PTFV show_war_menu(enum GameState curr_state)
 {
-    switch (g_war_curr_state) {
+    switch (curr_state) {
         case START: return show_menu_start();
         case PAUSE: return show_menu_pause();
         case WIN:   return show_menu_win();
         case LOSE:  return show_menu_lose();
         default: printf("I've been hacked\n"); exit(EXIT_FAILURE);
+        // If curr_state == QUIT, shouldn't show menu anyways
     }
 }

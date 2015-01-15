@@ -13,8 +13,8 @@
 
 const char *WAR_STATS = "war.stats";
 const char *WAR_SAVE = "war.deck";
-enum GameState g_war_curr_state = START;
 
+static enum GameState curr_state = START;
 static struct Player_L *player = NULL, *cpu = NULL;
 static struct Card *ccur[2] = { NULL, NULL };       /* The played cards */
 static int nturns = 0;                      /* Turns played so far */
@@ -79,20 +79,20 @@ static void game_init(void)
 /* Lose the game */
 static void lose_game(void)
 {
-    g_war_curr_state = LOSE;
+    curr_state = LOSE;
     fsave_stats();
 }
 
 /* Set the current state to PAUSE */
 static void pause_game(void)
 {
-    g_war_curr_state = PAUSE;
+    curr_state = PAUSE;
 }
 
 /* Win the game */
 static void win_game(void)
 {
-    g_war_curr_state = WIN;
+    curr_state = WIN;
     fsave_stats();
 }
 
@@ -105,7 +105,7 @@ static void play_game(void)
     struct CardNode *temp;
     int c;
     
-    while (g_war_curr_state == START) {
+    while (curr_state == START) {
         draw_war_board(player, cpu, (const struct Card **)ccur);    /* Since setting of ccur[] is after this */
 
         /* Prompt user to press enter, and skip over all input */
@@ -169,12 +169,12 @@ void quit_wargame(void)
     game_destroy();
     free_card_encs();
 
-    exit(EXIT_SUCCESS);
+    curr_state = QUIT;
 }
 
 void resume_wargame(void)
 {
-    g_war_curr_state = START;
+    curr_state = START;
     play_game();                            /* Only function other than start_*_wargame() that should call play_game() */
 }
 
@@ -218,7 +218,7 @@ void start_new_wargame(void)
     free(split);
     
     nturns = 0;
-    g_war_curr_state = START;
+    curr_state = START;
     play_game();
 }
 
@@ -248,14 +248,14 @@ void start_saved_wargame(void)
     free(hands);
 
     nturns = turns;
-    g_war_curr_state = START;
+    curr_state = START;
     play_game();
 }
 
 void war(void)
 {
-    while (1) {                             /* Infinite loop until quit_wargame() is called */
-        PTFV fptr = show_war_menu();
+    while (curr_state != QUIT) {            /* Loop until quit_wargame() is called */
+        PTFV fptr = show_war_menu(curr_state);
         (*fptr)();
     }
 }

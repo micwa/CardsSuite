@@ -184,9 +184,9 @@ static PTFV show_menu_win(void)
     }
 }
 
-PTFV show_solit_menu(void)
+PTFV show_solit_menu(enum GameState curr_state)
 {
-    switch (g_solit_curr_state) {
+    switch (curr_state) {
         case START: return show_menu_start();
         case PAUSE: return show_menu_pause();
         case WIN:   return show_menu_win();

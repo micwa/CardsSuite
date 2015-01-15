@@ -6,7 +6,6 @@
 /* Declare global constants and variables */
 extern const char *WAR_STATS;
 extern const char *WAR_SAVE;
-extern enum GameState g_war_curr_state;       /* Current game state */
 
 /* Quits the game; also should call game_destroy() */
 void quit_wargame(void);

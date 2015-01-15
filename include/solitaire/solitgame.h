@@ -7,7 +7,6 @@
 extern const char *SOLIT_STATS;
 extern const char *SOLIT_SAVE;
 
-extern enum GameState g_solit_curr_state;
 extern struct Hand *g_stock_hand;
 extern struct LinkedHand *g_tbl_hand[7];
 extern struct Card *g_fdtion_top[4];
